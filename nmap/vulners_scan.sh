@@ -12,7 +12,7 @@ XML_OUT="scan_${TARGET}.xml"
 HTML_OUT="scan_${TARGET}.html"
 
 echo "[*] Running Nmap vulners scan against $TARGET..."
-nmap -sV --script vulners --script-args mincvss=0 -oX "$XML_OUT" "$TARGET"
+nmap -sV --script "vulners,vuln" --script-args mincvss=0 -oX "$XML_OUT" "$TARGET"
 
 if [ $? -eq 0 ]; then
     echo "[*] Converting $XML_OUT to $HTML_OUT..."
