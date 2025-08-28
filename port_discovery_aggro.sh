@@ -2,28 +2,29 @@
 
 # This script starts out AGGRESSIVELY -- try not to use where stealth is essential
 
-# Check if the user provided a target
+# check if IP is provided
 if [ -z "$1" ]; then
     echo "Usage: $0 <target>"
     exit 1
 fi
 
 TARGET="$1"
+HOSTNAME=$(echo "$TARGET" | tr -d '[:punct:]')  # remove punctuations for filename
 
-# fast scan
-echo "Starting initial fast scan on $TARGET..."
-nmap -p- --min-rate=1000 -T4 -n -Pn "$TARGET" -oG initial-scan.txt
+# initial sweep
+echo "Starting initial AGGRO sweep on $TARGET..."
+nmap -p- --min-rate=1000 -T4 -n -Pn "$TARGET" -oG "${HOSTNAME}_initial-sweep-AGGRO.txt"
 
-# Step 2: Extract open ports from the initial scan
-echo "Extracting open ports from initial scan..."
-grep open initial-scan.txt | grep -oP '\d+/open' | cut -d '/' -f1 | paste -sd, - > ports.txt
+# extract ports
+echo "Extracting open ports from initial AGGRO sweep for $TARGET..."
+grep open "${HOSTNAME}_initial-scan.txt" | grep -oP '\d+/open' | cut -d '/' -f1 | paste -sd, - > "${HOSTNAME}_ports-AGGRO.txt"
 
-# Step 3: Run a detailed scan on the discovered open ports
-PORTS=$(cat ports.txt)
+# running additional scan on open ports
+PORTS=$(cat "${HOSTNAME}_ports-AGGRO.txt")
 
-echo "Running detailed scan on open ports: $PORTS..."
-nmap -sS -sV -O -p $PORTS "$TARGET" --scan-delay 200ms --max-retries 2 -T2 -n -Pn -oX detailed-scan.xml
+echo "Running detailed scan on open ports: $PORTS for $TARGET..."
+nmap -sS -sV -O -p $PORTS "$TARGET" --scan-delay 200ms --max-retries 2 -T2 -n -Pn -oX "${HOSTNAME}_detailed-scan-AGGRO.xml"
 
-# Step 4: Output the results
-echo "Detailed scan completed. Results saved to detailed-scan.xml"
+# OUTPUT!
+echo "Detailed AGGRO scan for $TARGET completed. Results saved to ${HOSTNAME}_detailed-scan-AGGRO.xml
 
