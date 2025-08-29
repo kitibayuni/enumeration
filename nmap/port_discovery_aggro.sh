@@ -23,7 +23,7 @@ grep open "${HOSTNAME}_initial-scan.txt" | grep -oP '\d+/open' | cut -d '/' -f1 
 PORTS=$(cat "${HOSTNAME}_ports-AGGRO.txt")
 
 echo "Running detailed scan on open ports: $PORTS for $TARGET..."
-nmap -sS -sV -O -p $PORTS "$TARGET" --scan-delay 200ms --max-retries 2 -T2 -n -Pn -oX "${HOSTNAME}_detailed-scan-AGGRO.xml"
+nmap -sS -sV -O --script "default,vuln,safe" -p $PORTS "$TARGET" -T4 -n -Pn -oX "${HOSTNAME}_detailed-scan-AGGRO.xml"
 
 # OUTPUT!
 echo "Detailed AGGRO scan for $TARGET completed. Results saved to ${HOSTNAME}_detailed-scan-AGGRO.xml
