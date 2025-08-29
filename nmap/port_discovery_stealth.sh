@@ -31,7 +31,7 @@ if [ -z "$PORTS" ]; then
 fi
 
 echo "Running detailed scan on open ports: $PORTS for $TARGET..."
-nmap --max-retries 2 --min-rate 50 --max-rate 200 --scan-delay 500ms --max-parallelism 1 --data-length 25 -D $DECOYS -sS -sV -O --script "discovery,safe" -p $PORTS "$TARGET" -T1 -n -Pn -oX "${HOSTNAME}_detailed-scan-AGGRO.xml"
+nmap --max-retries 2 --min-rate 50 --max-rate 200 --scan-delay 500ms --max-parallelism 1 --data-length 25 -D $DECOYS -sS -sV -O --script "discovery,safe" -p $PORTS "$TARGET" -T1 -n -Pn -oX "${HOSTNAME}_detailed-scan-STEALTH.xml"
 
 # OUTPUT!
 echo "Detailed STEALTH scan for $TARGET completed. Results saved to ${HOSTNAME}_detailed-scan-STEALTH.xml
