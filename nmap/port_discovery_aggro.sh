@@ -13,7 +13,7 @@ HOSTNAME=$(echo "$TARGET" | tr -d '[:punct:]')  # remove punctuations for filena
 
 # initial sweep
 echo "Starting initial AGGRO sweep on $TARGET..."
-nmap -p- --min-rate=1000 -T4 -n -Pn "$TARGET" -oG "${HOSTNAME}_initial-sweep-AGGRO.txt"
+nmap -p- --min-rate=1000 -T3 --max-retries 5 --min-rate 500 -n -Pn "$TARGET" -oG "${HOSTNAME}_initial-sweep-AGGRO.txt"
 
 # extract ports
 echo "Extracting open ports from initial AGGRO sweep for $TARGET..."
