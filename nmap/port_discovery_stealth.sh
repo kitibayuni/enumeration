@@ -16,7 +16,18 @@ DECOYS="192.168.1.10,192.168.1.25,192.168.1.50,192.168.1.100,192.168.1.150,192.1
 
 # initial sweep
 echo "Starting initial STEALTH sweep on $TARGET..."
-nmap -p- --min-rate=200 -T1 --max-retries 2 --min-rate 50 --scan-delay 500ms --max-parallelism 1 -D $DECOYS --data-length 25 -n -Pn "$TARGET" -oG "${HOSTNAME}_initial-sweep-STEALTH.txt"
+nmap -p- \
+  --min-rate=200 \
+  -T1 \
+  --max-retries 2 \
+  --min-rate 50 \
+  --scan-delay 500ms \
+  --max-parallelism 1 \
+  -D $DECOYS \
+  --data-length 25 \
+  -n \
+  -Pn "$TARGET" \
+  -oG "${HOSTNAME}_initial-sweep-STEALTH.txt"
 
 # extract ports
 echo "Extracting open ports from initial STEALTH sweep for $TARGET..."
@@ -31,7 +42,24 @@ if [ -z "$PORTS" ]; then
 fi
 
 echo "Running detailed scan on open ports: $PORTS for $TARGET..."
-nmap --max-retries 2 --min-rate 50 --max-rate 200 --scan-delay 500ms --max-parallelism 1 --data-length 25 -D $DECOYS -sS -sV -O --script "discovery,safe" -p $PORTS "$TARGET" -T1 -n -Pn -oX "${HOSTNAME}_detailed-scan-STEALTH.xml"
+nmap \
+  --max-retries 2 \
+  --min-rate 50 \
+  --max-rate 200 \
+  --scan-delay 500ms \
+  --max-parallelism 1 \
+  --data-length 25 \
+  -D $DECOYS \
+  -sS \
+  -sV \
+  -O \
+  --script "discovery,safe" \
+  -p $PORTS \
+  "$TARGET" \
+  -T1 \
+  -n \
+  -Pn \
+  -oX "${HOSTNAME}_detailed-scan-STEALTH.xml"
 
 # OUTPUT!
 echo "Detailed STEALTH scan for $TARGET completed. Results saved to ${HOSTNAME}_detailed-scan-STEALTH.xml

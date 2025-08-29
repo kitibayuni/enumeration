@@ -14,4 +14,11 @@ WORDLIST="$2"
 PROTOCOL="$3"
 OUTPUT="ffuf_subdomains_$DOMAIN.json"
 
-ffuf -w "$WORDLIST" -u "$PROTOCOL://FUZZ.$DOMAIN" -H "Host: FUZZ.$DOMAIN" -mc 200,301,302 -t 50 -o "$OUTPUT" -of json
+ffuf \
+  -w "$WORDLIST" \
+  -u "$PROTOCOL://FUZZ.$DOMAIN" \
+  -H "Host: FUZZ.$DOMAIN" \
+  -mc 200,301,302 \
+  -t 50 \
+  -o "$OUTPUT" \
+  -of json
