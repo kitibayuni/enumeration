@@ -17,7 +17,7 @@ nmap -p- --min-rate=1000 -T3 --max-retries 5 --min-rate 500 -n -Pn "$TARGET" -oG
 
 # extract ports
 echo "Extracting open ports from initial AGGRO sweep for $TARGET..."
-grep open "${HOSTNAME}_initial-scan-AGGRO.txt" | grep -oP '\d+/open' | cut -d '/' -f1 | paste -sd, - > "${HOSTNAME}_ports-AGGRO.txt"
+grep open "${HOSTNAME}_initial-sweep-AGGRO.txt" | grep -oP '\d+/open' | cut -d '/' -f1 | paste -sd, - > "${HOSTNAME}_ports-AGGRO.txt"
 
 # running additional scan on open ports
 PORTS=$(cat "${HOSTNAME}_ports-AGGRO.txt")

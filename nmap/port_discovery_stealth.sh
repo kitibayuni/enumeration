@@ -20,7 +20,7 @@ nmap -p- --min-rate=200 -T1 --max-retries 2 --min-rate 50 --scan-delay 500ms --m
 
 # extract ports
 echo "Extracting open ports from initial STEALTH sweep for $TARGET..."
-grep open "${HOSTNAME}_initial-scan-STEALTH.txt" | grep -oP '\d+/open' | cut -d '/' -f1 | paste -sd, - > "${HOSTNAME}_ports-STEALTH.txt"
+grep open "${HOSTNAME}_initial-sweep-STEALTH.txt" | grep -oP '\d+/open' | cut -d '/' -f1 | paste -sd, - > "${HOSTNAME}_ports-STEALTH.txt"
 
 # running additional scan on open ports
 PORTS=$(cat "${HOSTNAME}_ports-STEALTH.txt")
