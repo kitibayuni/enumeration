@@ -1,0 +1,41 @@
++------------------------------------------------------------------+
+|                         FTP ENUMERATION                          |
++------------------------------------------------------------------+
+
+TOOLS / INSTALLATION
+
+* vsftpd (FTP server/client utilities)
+  • Install: sudo apt install vsftpd
+
+CONNECTING
+
+* Use the ftp client when an FTP service is detected:
+  • ftp <target_ip>
+* Anonymous login:
+  • username: anonymous
+  • password: (blank) — often accepted for anonymous access
+
+BROWSING / LISTING
+
+* ls        : list files in current directory
+* ls -R     : recursively list files and directories
+
+COMMON FILE TRANSFER COMMANDS (ftp / tftp style)
+
+* connect   : Sets the remote host (and optionally port) for file transfers
+* get       : Transfer a file (or files) from remote host to local host
+* put       : Transfer a file (or files) from local host to remote host
+* quit      : Exit the client
+* status    : Show current client status (mode, connection, timeout, etc.)
+* verbose   : Toggle verbose mode (shows extra info during transfers)
+
+NOTES / TIPS
+
+* Anonymous FTP often exposes readable files; check for sensitive files.
+* Use recursive listing and download suspicious files for offline review.
+* If anonymous is blocked, try common credentials or brute-force carefully and legally.
+* Understand whether commands refer to ftp or tftp clients as some syntax/behavior differs.
+
++------------------------------------------------------------------+
+|                          End of Notes                             |
++------------------------------------------------------------------+
