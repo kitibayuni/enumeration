@@ -1,0 +1,16 @@
+NFS Enumeration & Access
+------------------------
+
+1. Discover NFS service
+   - Use nmap to scan for NFS ports
+
+2. List available NFS shares
+   - showmount -e <target_ip>
+
+3. Mount an NFS share
+   - mkdir target_nfs
+   - sudo mount -t nfs <target_ip>:/ ./target_nfs/ -o nolock
+
+4. Access files
+   - cd target_nfs
+   - browse the mounted share

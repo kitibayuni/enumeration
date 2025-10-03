@@ -1,0 +1,29 @@
+================
+DNS / Zone Notes
+================
+
+[SOA Record]
+- Defines domain authority & management
+- Check with:
+  dig soa <www.domain_example.com>
+
+[Zone Files (BIND)]
+- Location: /etc/bind/<filename>
+- View: cat /etc/bind/<filename>
+- Options to check for vulnerabilities:
+  * allow-query       -> who can query zone
+  * allow-recursion   -> recursion allowed? (open resolver risk)
+  * allow-transfer    -> AXFR allowed? (full zone leak risk)
+  * zone-statistics   -> may expose operational info
+
+[dig Usage]
+- Query specific nameserver:
+  dig <type> <zone> @<dns_server_ip>
+  Example: dig ns inlanefreight.htb @10.129.14.128
+- Query all records:
+  dig any inlanefreight.htb @10.129.14.128
+
+[Subdomain Discovery Notes]
+- ffuf: HTTP/HTTPS-level detection (webserver presence)
+- DNS-level tools: direct DNS record detection (works even without webserver)
+- Recommended: combine DNS enumeration + HTTP probing

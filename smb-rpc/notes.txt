@@ -1,0 +1,46 @@
++---------------------------------------------------------------+
+|                      SMB & RPC QUICK NOTES                    |
++---------------------------------------------------------------+
+
+SMB (samba) with smbclient
+
+* List shares (anonymous):
+  smbclient -N -L //<target_ip>
+  • -N = no password (anonymous)
+* Connect to a share:
+  smbclient //<target_ip>/<share_name>
+* Common interactive commands inside smbclient:
+  ls           # list files in current dir
+  cd/<cs>      # change directory (cs is shorthand)
+  get <file>   # download file from share to local
+  put <file>   # upload file to share (if permitted)
+  exit/quit    # leave smbclient
+
+RPC with rpcclient
+
+* Connect anonymously:
+  rpcclient -U "" <target_ip>
+  • -U "" passes an empty username (anonymous)
+* Useful rpcclient commands:
+  srvinfo                # basic server info
+  enumdomains            # enumerate domains
+  querydominfo           # query domain info
+  netshareenumall        # enumerate all network shares
+  netsharegetinfo <share># get details about a specific share
+  enumdomusers           # enumerate domain users
+  queryuser <RID>        # query user by RID (relative id)
+* Tips:
+  • Run rpcclient commands interactively after connecting.
+  • Many RPC commands require proper privileges to return full info.
+  • Combine smbclient + rpcclient findings for richer enumeration.
+
+GENERAL NOTES
+
+* Try anonymous first; many labs/CTFs expose read-only shares.
+* When downloading files, verify ownership/permissions (UID/GID).
+* If anonymous is blocked, try common creds or authenticated scans (only with permission).
+* Log outputs locally for later analysis (e.g., smbclient -L output, rpcclient dumps).
+
++---------------------------------------------------------------+
+|                           END                                  |
++---------------------------------------------------------------+
