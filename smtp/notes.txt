@@ -1,0 +1,96 @@
+===================================================
+=                  SMTP ASCII NOTES               =
+===================================================
+
+OVERVIEW
+--------
+- SMTP = Simple Mail Transfer Protocol for sending email over IP.
+- Flow: MUA → SMTP client → (MSA relay) → MTA → recipient MTA → MDA → mailbox.
+
+ACTORS & ROLES
+--------------
+MUA (Mail User Agent)
+  - User’s email client.
+  - Converts message into headers + body → sends to SMTP client.
+
+MSA (Mail Submission Agent) [relay]
+  - Validates before passing to MTA.
+  - Misconfig can cause OPEN RELAY (attack risk).
+
+MTA (Mail Transfer Agent)
+  - Accepts mail, checks size/spam, queues, routes to recipient server.
+
+MDA (Mail Delivery Agent)
+  - At recipient side, delivers to mailbox.
+
+SMTP MESSAGE FLOW
+-----------------
+1. MUA prepares headers + body → SMTP client.
+2. MSA validates → passes to MTA.
+3. MTA finds recipient mail server → sends message.
+4. Recipient MTA → MDA → mailbox.
+
+CONS / LIMITATIONS
+------------------
+- No reliable delivery confirmation ("send it and pray").
+- No authentication on TCP connection → spoofing & spam.
+
+SECURITY / MITIGATIONS
+----------------------
+- SPF & DKIM for sender validation.
+- ESMTP + STARTTLS for encrypted connections.
+- AUTH PLAIN (with TLS) for authentication.
+
+ADMIN PITFALLS
+--------------
+- Misconfigured whitelists → open relays.
+- Open relay allows anyone to forward spam.
+
+===================================================
+=              HANDS-ON (MOST IMPORTANT)           =
+===================================================
+
+TELNET INTERACTION
+------------------
+- Connect:  telnet <target-ip> <port>
+- Start session: 
+    HELO mail1.inlanefreight.htb
+    EHLO mail1
+
+USER ENUMERATION
+----------------
+- VRFY root
+- VRFY us3rn4m3
+- VRFY testuser
+(Responses may reveal valid users)
+
+MANUAL EMAIL SEND VIA TELNET
+----------------------------
+1. EHLO <smtp-server-namespace.com>
+2. MAIL FROM:<spoofed@email.com>
+3. RCPT TO:<target@email.com> NOTIFY=success,failure
+4. DATA
+   354 End data with <CR><LF>.<CR><LF>
+   Example:
+     From: cry0l1t3@inlanefreight.htb
+     To: mrb3n@inlanefreight.htb
+     Subject: DB
+     Date: Tue, 28 Sept 2021 16:32:51 +0200
+
+     Hey man, I am trying to access our XY-DB but the creds don’t work.
+     Did you make any changes there?
+     .
+5. QUIT
+
+===================================================
+=        OPEN RELAY DISCOVERY WITH NMAP           =
+===================================================
+- Command:
+  sudo nmap <target-ip> -p <port> --script smtp-open-relay -v
+
+===================================================
+=                   REMINDERS                     =
+===================================================
+- Always use STARTTLS + authenticated submission.
+- Use SPF/DKIM/DMARC to reduce spoofing.
+- Enumeration must be done ethically and with authorization.

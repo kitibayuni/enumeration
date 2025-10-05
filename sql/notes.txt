@@ -1,0 +1,62 @@
+happy happy SQL, I love sql, i love schemas
+
+FOR MYSQL:
+
+you should check for mysql using 
+sudo nmap <target-ip> -sV -sC -p <sql server port> --script mysql*
+
+
+you can log into mysql using mysql -u <user> -p<password> -h <target-ip> # NOTE no space between flag and password
+
+enum dbs using:
+show databases;
+
+select a db using:
+use <database>;
+
+show all tables in the selected db using:
+show tables;
+
+show all columns in the select table:
+show columns from <table>;
+or everything:
+show * from <table>;
+
+search for a needed string in desired table
+select * from <table> where <column> = "<string>";
+
+SELECT LIMITED 10 ROWS USINNG:
+select * from <table> limit 10;
+
+
+
+FOR MSSQL:
+
+
+MSSQL is the microsoft's sql-based database management system, which is closed source compared to mysql's open source
+
+if you find ms-sql, you can run a more detailed scan with:
+sudo nmap --script ms-sql-info,ms-sql-empty-password,ms-sql-xp-cmdshell,ms-sql-config,ms-sql-ntlm-info,ms-sql-tables,ms-sql-hasdbaccess,ms-sql-dac,ms-sql-dump-hashes --script-args mssql.instance-port=1433,mssql.username=sa,mssql.password=,mssql.instance-name=MSSQLSERVER -sV -p 1433 10.129.201.248
+
+OR
+
+./mssql-nmap-scan.sh -t <target> [-p <port>] [-u <username>] [-P <password>] [-i <instance>] [--extra "<nmap-args>"] (custom script i vibed)
+
+
+you can also use metasploit via:
+(sometimes start w: sudo msfdb init)
+msfconsole
+
+then:
+use auxiliary/scanner/mssql/mssql_ping
+
+then:
+set rhosts <target-ip>
+set rport <target-port>
+set threads <any you'd like>
+run
+
+if you have credentials, then use mssqlclient.py from IMPACKET:
+python3 mssqlclient.py <username>:<password>@<target-ip> -windows-auth
+
+then you can use help to see all commands to explore the database.

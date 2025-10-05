@@ -1,0 +1,56 @@
+Using IMAP (internet message access protocol), access to emails FROM a mail server is possible (unlik post office protocol (POP3)); Popp3 only supports listing, retrieving, and deleting emails; IMAP allows hierarchical mailboxes, which has access to multiple mailboxes in a session. IMAP usually uses port 143 and text-based ascii commands; supports multiple commands at ones; user authentication required before mailbox access; by default, IMAP transmits data in plain text, so encryption is recommended via SSL/TLS (port 993 usually). IMAP and POP3 have a large number of configuration options, so it's recommended to create a VM locally and install dovecot-imapd and dovecot-pop3d to play around with configurations
+
+ports usually associated with this are 110, 143, 993, 995.
+
+When you have the credentials of a user, and you've figured out the server has imaps, then you can use the following command: curl -k 'imaps://<target-ip>' --user username:p4ssw0rd
+to which you can also use -v to VERBOSE curl and see how the connection is established.
+
+encrypted interaction:
+For pop3, you can use openssl like so: openssl s_client -connect <target-ip>:pop3s
+For imap, you can use openssl like so: openssl s_client -connect <target-ip>:imaps
+
+
+STEPS TO ACCES AN EMAIL:
+after openssl conneccting to imap, use:
+
+login using
+a login <username> <password>
+
+then list mailboxes using
+a list "" *
+
+select a mailbox using
+a select <mailboxname>
+
+then search messages using
+a search all
+
+or by a user
+a search from "bingus@email.com"
+
+or by a subject
+a search subject "invoice"
+
+you can fetch the full raw message with (BUT BE CAREFUL BECAUSE MESSAGE MIGHT MARK READ)
+a fetch <message sequence number from search all> RFC822
+
+or only headers
+a fetch <sequence number> (BODY.PEEK[HEADER])
+
+or only body text
+a fetch <sequence number> (BODY.PEEK[TEXT])
+
+
+
+READING MESSAGES USING POP3 ON OPENSSL:
+after connecting via openssl,
+
+login using
+USER <username>
+then
+PASS <password>
+
+list messages where: +OK <message count> <total size> using:
+STAT
+
+

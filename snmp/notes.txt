@@ -1,0 +1,16 @@
+BEST DETECTION OF SNMP is through nmap first
+it's usually on port 161, but might be elsewhere
+it's a UDP service, so watch out, as you will have to do -sU flag
+
+snmp is currently at snmpv3 which adds authentication and encryption; to make sure it's standardized, the management information base MIB was created; to footprint the service, tools like snmpwalk, onesixtyone, and braa are used; an OID represents a node in the hierarchical namespace,
+
+a community string in snmp is like a password
+
+you can use onesixtyone to brute force a community string:
+onesixtyone -c <wordlist.txt> <target-ip>
+
+then after finding the community string, use braa to brute force individual OIDs
+braa <community-string>@<target-ip>:.1.3.4.*
+
+you can enumerate using:
+snmpwalk -v2c -c <community-string> <target-ip>

