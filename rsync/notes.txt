@@ -1,0 +1,8 @@
+rsync is fast and efficient tool for locally and remotely copying files; uses tcp 873 by default
+
+you can probe for accessible shares with:
+nc -nv <target-ip> <target-port>
+
+you c enumerate an open share even further using:
+rsync -av --list-only rsync://<target-ip>/<share-name>
+

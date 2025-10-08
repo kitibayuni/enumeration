@@ -1,0 +1,8 @@
+The program should have a section for modules, split into respective folders depending on what kind of service they perform on;
+
+You should be able to "start a session", which creates a new folder for that sessions that can log which modules have been run, and also logs the runtime for those modules in their respective session/module folder
+
+There should be the ability to add usernames to a list for the session and add passwords to a list for the session. These should be able to replace usernames and passwords in some of the modules
+
+
+There should be a checkpoint script that takes 3 arguments: "Description of Process", "Failure message", "Success message", and detects if there is an error in the process, automatically detects the script name, then logs the console output in a log.

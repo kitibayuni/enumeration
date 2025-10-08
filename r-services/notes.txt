@@ -1,0 +1,30 @@
+a suite of services used to enable remote access or issue commands; developed by the computer systems research group
+
+R-services span across the ports 512, 513, and 514 by default
+
+They are a suite of programs known as r-commands, like:
+rcp (remote copy)
+rexec (remote execution)
+rlogin (remote login)
+rsh (remote shell)
+rstat
+ruptime
+rwho (remote who)
+
+trusted hosts for r-services can be found in
+/etc/hosts.equiv
+
+per-user config for trusted hosts is in 
+cat .rhosts
+
+
+
+you can login with:
+rlogin <target-ip> -l <username>
+
+and list authenticated users with login using:
+rwho
+
++ additional details:
+rusers -al <target-ip>
+

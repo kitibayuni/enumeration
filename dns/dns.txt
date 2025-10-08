@@ -1,4 +1,4 @@
-========================
+d========================
  DNS / Zone Notes
 ========================
 
@@ -6,6 +6,10 @@
 - Defines who is responsible for the domain and how DNS is managed.
 - Quick check:
   dig soa <www.domain_example.com>
+
+[GOBUSTER]
+gobuster vhost -u http://<target-ip>:<specific-port> -w <wordlist.txt> --append-domain --domain <target-ip/host>
+
 
 [Zone Files (BIND)]
 - Common location: /etc/bind/<filename>

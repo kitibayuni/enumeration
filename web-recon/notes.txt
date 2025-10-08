@@ -1,0 +1,103 @@
+WHOIS for IP address blocks + autonomous systems:
+whois examplewebsite.com
+
+^ usually will contain:
+- domain name
+- registrar: the company where the domain was registered (Namecheap, GoDaddy)
+- registrant contact: person/organization that registered
+- administrative contact: person responsible for managing the domain
+- technical contact: person responsible for tech issues for the domain
+- creation and expiration dates: when domain was registered and when it expires
+- name servers: servers that translate the domain name into an ip
+
+^ blue team uses:
+- phishing investigation; using WHOIS to see if domain was registered relatively recently, see if registrant is hidden behind privacy service, check name servers 
+- malware analysis; registrant might use free email service known for anonymity, registrant address might be in country of more cybercrime, registrar might be one with lax abuse policies
+- threat intelligence report;  
+
+PASSIVE SUBDOMAIN ENUM:
+- Look for Certificate Transparency (CT) logs, which usually contain subdomains
+- You can also use the search engine and DORK related subdomains
+
+
+SUBDOMAIN ENUMERATION:
+- start with probing the DNS, digging, and DNS zone transfers.
+- try brute-forcing dns subdomains using wordlist (dnsenum):
+	dnsenum --enum <target-domain> -f <wordlist.txt> -r
+
+
+CERTIFICATE TRANSPARENCY LOGS:
+These logs are append-only ledgers to record issuance of SSL/TLS certificates; when we get a certificate, it could mean the ability to spoof another website's communication.
+You can query them like:
+curl -s "https://crt.sh/?q=<website>&output=json" | jq -r '.[]
+ | select(.name_value | contains("dev")) | .name_value' | sort -u
+
+ Fingerprinting tech that could help:
+ Wappalyzer
+ WhatWeb
+ Nmap
+ Netcraft
+ wafw00f (specifically for web application firewalls)
+ pip3 install git+https://github.com/EnableSecurity/wafw00f
+
+ BANNER GRAB:
+ curl -I <website.com>
+ curl -I <https://website.com>
+
+NIKTO:
+sudo apt update && sudo apt install -y perl
+git clone https://github.com/sullo/nikto
+cd nikto/program
+chmod +x ./nikto.pl
+
+^ then use like:
+nikto -h <target-name> -Tuning b
+(tuning b tells to only run software identification)
+
+
+
+CRAWLING:
+object of interest include:
+- links
+- comments
+- metadata
+- files accessible
+- robots.txt (can reveal hidden directories, or honeypots)
+
+robots.txt file works similar to .gitignore but for webcrawlers;
+rogue web crawlers usually don't respect them.
+
+WELL KNOWN URI's:
+security.txt -- contact information for security researchers to report vulns
+/.well-known/change-password -- standard URL for directing users to password change
+openid-configuration -- config details, oauth2.0 identity layer
+assetlinks.json -- verifies ownership of digital assets w/ a domain
+mta-sts.txt specifies the policy for SMTP MTA strict .
+THERE ARE MUCH MORE FOUND: https://www.iana.org/assignments/well-known-uris/well-known-uris.xhtml
+
+Crawlers:
+scrapy: 
+pip3 install scrapy
+reconspider: 
+wget -O ReconSpider.zip https://academy.hackthebox.com/storage/modules/144/ReconSpider.v1.2.zip
+unzip ReconSpider.zip 
+python3 ReconSpider.py http://inlanefreight.com
+
+FINALRECON might be the best:
+git clone https://github.com/thewhiteh4t/FinalRecon.git
+cd FinalRecon
+pip3 install -r requirements.txt
+chmod +x ./finalrecon.py
+
+commands include:
+--url <target-ip>
+--headers
+--sslinfo
+--whois
+--crawl
+--dns
+--sub
+--dir
+--wayback
+--ps (port scan)
+--full (all)

@@ -1,0 +1,21 @@
+mi favorito
+
+remote desktop protocol(RDP) is windows, yay
+
+footprint:
+nmap -sV -sC <target-ip> -p<rdp-port> --script rdp*
+
+
+
+rdp security check first install:
+sudo cpan
+install Encoding::BER
+
+then sec check using:
+git clone https://github.com/CiscoCXSecurity/rdp-sec-check.git && cd rdp-sec-check
+./rdp-sec-check.pl <target-ip>
+
+
+if you have credentials, you can:
+xfreerdp /u:<username> /p:"<password>" /v:<target-ip>
+

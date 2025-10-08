@@ -1,0 +1,16 @@
+ssh is wonderful and i love it
+
+you can audit w/:
+git clone https://github.com/jtesta/ssh-audit.git && cd ssh-audit
+
+then launch w/
+./ssh-audit.py <target-ip>
+
+check the banner and software, and check if there is a vulnerability somewhere online
+
+this forces password authentication and is verbose
+ssh -v <username>@<target-ip> -o PreferredAuthentications=password
+
+we can brute force using hydra using: 
+hydra -L <userlist.txt> -P <passwordlist.txt> -t <thread#> -V ssh://<target-ip> -o <output.txt>
+

@@ -1,3 +1,4 @@
 # Ignore all directories named "target"
 target/
 **/target/
+notes/*

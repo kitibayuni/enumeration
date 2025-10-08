@@ -16,6 +16,27 @@ SMB (samba) with smbclient
   put <file>   # upload file to share (if permitted)
   exit/quit    # leave smbclient
 
+RPC SERVICE ENUM!
+you can get a cleaner output of rpc services using:
+rpcinfo -p <target-ip>
+
+and NFS shares available using:
+showmount -e <target-ip>
+if something is available like: /ShareName (everyone)
+
+then you can mount it to a local mount point using:
+mkdir -p /mnt/nfs-gimme/
+sudo mount -t nfs -o ro,vers=4,proto=tcp <SERVER_IP>:/ShareName /mnt/nfs-gimme/
+^ try that first, if not, then v
+sudo mount -t nfs -o ro,vers=3,proto=tcp <SERVER_IP>:/ShareName /mnt/nfs-gimme/
+
+IF YOU FIND NTUSER.DAT
+you can get more info with:
+reglookup NTUSER.DAT > ntuser_dump.txt
+grep -Ein -C3 -E 'Software\\Microsoft\\Windows\\CurrentVersion\\Run|RunMRU|TypedPaths|Terminal Server Client|Servers|Internet Settings|Vault|RunOnce|TypedPath|UserAssist|password|passwd|pwd|secret|token|apikey|api_key|auth|credential|ssh-rsa|BEGIN RSA PRIVATE KEY|AKIA[0-9A-Z]{16}|AIza[0-9A-Za-z_-]{35}' ntuser_dump.txt | less -R
+
+
+
 RPC with rpcclient
 
 * Connect anonymously:
