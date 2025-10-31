@@ -1,0 +1,26 @@
+REMEMBER TO USE PY2JOHN!
+
+.PWSAFE
+use -> pwsafe2john.py
+detectable if you cat it will start the text with 'PWS3', or is listed as .psafe
+
+john --format=psafe
+
+^ This only allows for passwords when cracked, but you can then read the usernames using PWSAFE for linux:
+sudo apt install pwsafe
+or
+sudo apt install passwordsafe
+or
+https://github.com/pwsafe/pwsafe
+
+creating a db:
+pwsafe --createdb myvault.psafe3
+(prompted for master password)
+
+pwsafe --add myvault.psafe3
+
+list entries:
+pwsafe --list myvault.psafe3
+
+pwsafe --retrieve myvault.psafe3 "entry"
+

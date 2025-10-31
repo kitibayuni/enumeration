@@ -1,0 +1,9 @@
+MEDUSA is a powerful tool for LARGE-SCALE, Multi-target network attacks.
+
+It's better than hydra at distributing brute-forcing.
+
+
+CHECKING EMPTY OR DEFAULT PASSWORDS:
+medusa -h 10.0.0.5 -U usernames.txt -e ns -M service_name
+
+medusa -h 127.0.0.1 -u ftpuser -P 2020-200_most_used_passwords.txt -M ftp -t 5

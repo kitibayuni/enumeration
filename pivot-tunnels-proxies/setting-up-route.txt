@@ -1,0 +1,26 @@
+SETTING UP A ROUTE:
+
+This opens up a SOCKS proxy through the target SSH'd:
+ssh -D <proxy port of your choice> <user>@<target-ip>
+
+This configures proxychain to use the proxy port^ :
+sudo vim /etc/proxychain.conf (make sure to have: socks4 127.0.0.1 <proxy-port-above>)
+
+
+NMAP using proxychains:
+Once the SOCKS proxy has been established, you can scan it using:
+sudo proxychains -q nmap -sT FILE01 -F -Pn
+(note that -sT signals full-open scan, since raw SYN packets aren't compatible w/ proxychains)
+
+
+
+SMBCLIENT using proxychains:
+enumeration options:
+proxychains rpcclient -U '' 172.16.119.10 -c srvinfo
+proxychains smbclient -L //172.16.119.10/ -U 'NEXURA\\hwilliam'
+
+sudo proxychains smbclient -L //172.16.119.10/ -N
+sudo proxychains smbclient -L //172.16.119.10/ -U hwilliam
+sudo proxychains smbclient -L //172.16.119.10/ -U <companyName>\\hwilliam
+(mind that the -U <WORKGROUP>\\<username> is usually the company name)
+sudo proxychains smbclient -L //172.16.119.10/ -U hwilliam@nexura

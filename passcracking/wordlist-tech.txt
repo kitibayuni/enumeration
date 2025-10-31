@@ -1,0 +1,40 @@
+PASSWORD GENERATION
+Find words relevant to the target's life:
+- job names
+- job roles
+- birthday (if August 5, 1998 -> 0805, 1998, 08, 0508 0898)
+- pet names
+- family member names
+- where they live
+- hobbies
+
+TURN THIS INTO A BASELIST.TXT
+
+use the script to leetify the base list (mangler.py)
+ex. python3 mangler.py baselist.txt > mangled.txt
+
+
+
+AWK-METHOD for wordpairs:
+awk 'NR==FNR{w[++n]=$0; next} {for(i=1;i<=n;i++) print $0 w[i]}' mangled.txt mangled.txt > wordpairs.txt
+
+
+FILTER WORDPAIRS for specific length:
+awk 'length($0) >= 12 && length($0) <= 24' wordpairs.txt > filtered.txt
+
+
+
+
+======================
+USERNAME GENERATION
+./username-anarchy firstname lastname
+
+or make a list.txt:
+Anna Key
+John Doe
+Maria Gonzalez
+
+then:
+./username-anarchy -i list.txt -o usernames.txt
+
+./username-anarchy -i names.csv --substitute on --max-sub -1 --case-insensitive false > base_usernames.txt

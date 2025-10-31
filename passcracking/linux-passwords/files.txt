@@ -1,0 +1,23 @@
+PASSWD:
+/etc/passwd
+username:password:userID:groupID:GECOS:home-dir:default-shell
+(note that password is usually an 'x', but MIGHT hold a password hash instead)
+
+SHADOW FILE:
+/etc/shadow
+(only readable by readers w/ admin privs, but contains password hash)
+
+OPASSWD:
+/etc/security/opasswd
+(if exists, it contains previous passwords)
+
+
+
+CRACKING LINUX CRED:
+sudo cp /etc/passwd /tmp/passwd.bak 
+sudo cp /etc/shadow /tmp/shadow.bak 
+unshadow /tmp/passwd.bak /tmp/shadow.bak > /tmp/unshadowed.hashes
+
+hashcat -m 1800 -a 0 /tmp/unshadowed.hashes rockyou.txt -o /tmp/unshadowed.cracked
+(when cracking, make sure you include the full lines in the hash file like:)
+(martin:$6$0XiU8Oe/pGpxWvdq$n6TgiYUVAXBUOO11C155Ea8nNpSVtFFVQveY6yExlOdPu99hY4V9Chi1KEy/lAluVFuVcvi8QCO1mCG6ra70A1:1000:1000:Martin Mendes:/home/martin:/usr/bin/zsh)

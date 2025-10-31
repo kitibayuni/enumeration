@@ -1,0 +1,45 @@
+HTTP	HTTPS			Used for transferring web pages and resources over the internet.
+FTP		FTPS/SFTP		Used for transferring files between a client and a server.
+SNMP	SNMPv3 (with encryption)			Used for monitoring and managing network devices like routers and switches.
+POP3	POP3S			Retrieves emails from a mail server to a local client.
+IMAP	IMAPS			Accesses and manages email messages directly on the mail server.
+SMTP	SMTPS			Sends email messages from client to server or between mail servers.
+LDAP	LDAPS			Queries and modifies directory services like user credentials and roles.
+RDP		RDP (with TLS)	Provides remote desktop access to Windows systems.
+DNS (Traditional)	DNS over HTTPS (DoH)		Resolves domain names into IP addresses.
+SMB		SMB over TLS (SMB 3.0)			Shares files, printers, and other resources over a network.
+VNC		VNC with TLS/SSL			Allows graphical remote control of another computer.
+
+
+
+
+WE USE WIRESHARK!
+ip.addr == <target-ip>		FILTERS PACKETS TO IP
+tcp.port == <port>
+http
+dns
+tcp.flags.syn == 1 && tcp.flags.ack == 0 		FILTERS SYN PACKETS (for tcp handshakes)
+icmp		FILTERS ICMP PACKETS (used for ping)
+http.request.method == "POST"		FILTERS FOR HTTP POST REQUESTS
+tcp.stream eq 53			FILTERS FOR A SPECIFIC TCP STREAM
+eth.addr == <mac-address>		FILTERS FOR MAC ADDRESS
+ip.src == <target-one> && ip.dst <target-two>		FILTERS FOR TRAFFIC BETWEEN TWO IP ADDRESSES
+
+
+
+PCREDZ:
+a tool that can be used to extract creds from live traffic, including:
+Credit card numbers
+POP credentials
+SMTP credentials
+IMAP credentials
+SNMP community strings
+FTP credentials
+Credentials from HTTP NTLM/Basic headers, as well as HTTP Forms
+NTLMv1/v2 hashes from various traffic including DCE-RPC, SMBv1/2, LDAP, MSSQL, and HTTP
+Kerberos (AS-REQ Pre-Auth etype 23) hashes
+
+It is used ON A .PCAPNG file!
+
+./pcredz -f example.pcapng -t -v
+

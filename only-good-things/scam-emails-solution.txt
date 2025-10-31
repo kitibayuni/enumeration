@@ -1,0 +1,18 @@
+SPAM EMAILS THAT TRY TO LOG PEOPLE'S INFORMATION FOR MALICIOUS GAIN:
+
+1. Check the email (check the original email as to not activate the link and have your info tracked)
+2. Connect to the website via browser and check the requests you can send to the server
+3. Check the certificates and contact the proper authorities about the abuse
+4. Use JS in console to:
+function submitForm(){
+	if (document.getElementById('logInBtn')) {
+		document.getElementById('email').value = 'deez@nu.tz';
+		document.getElementById('logInBtn').click();
+	}
+}
+
+^ this is just a sample, but if you can export your user agent, cookies, etc... then you can script it in python w/ the faker library
+	to submit all fake information to spam the scammer's databases
+
+5. periodically check if the service is still up
+

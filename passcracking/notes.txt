@@ -1,0 +1,21 @@
+check a hashid using:
+JOHN:
+hashid -j <hash-string/hash.txt>
+
+HASHCAT:
+hashid -m <hash-string/hash.txt>
+
+^^ try cracking the password using the results from this (multiple sometimes)
+
+IF NOT AVAILABLE HASH ON HASHCAT, USE JOHN
+
+Hashcat mask attack example:
+hashcat -a 3 -m 0 1e293d6912d074c0fd15844d803400dd '?u?l?l?l?l?d?s'
+
+
+CEWL
+CeWL is a tool that scans potential words from a company's website and saves them in a separate list
+example:
+cewl https://www.inlanefreight.com -d 4 -m 6 --lowercase -w inlane.wordlist
+check word count:
+wc -l inlane.wordlist

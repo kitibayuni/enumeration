@@ -1,0 +1,58 @@
+DISCOVERY STEPS:
+1. FUZZ subdomains
+2. FUZZ vhosts
+3. FUZZ extensions available
+4. FUZZ recursively each subdomain new directories
+5. FUZZ files on directories available
+6. FUZZ parameters available(is this php-specific?)
+7. FUZZ 
+
+PAGE FUZZING
+ffuf -w /opt/useful/seclists/Discovery/Web-Content/web-extensions.txt:FUZZ
+(this will look for any files on the server)
+(You can use two wordlists to both enumerate files and directoriees)
+
+
+ffuf -w /opt/useful/seclists/Discovery/Web-Content/web-extensions.txt:FUZZ -u http://SERVER_IP:PORT/blog/indexFUZZ
+
+
+MULTIPLE WORDLISTS
+This is important for if you need to enumerate multiples without doing it manually
+ffuf -u 'http://target/FUZZ1/FUZZ2?file=FUZZ3' \
+  -w /path/to/dirs.txt:FUZZ1 \
+  -w /path/to/files.txt:FUZZ2 \
+  -w /path/to/params.txt:FUZZ3 \
+  -t 40 -mc 200,301
+
+
+ Example
+ ffuf -w /usr/share/seclists/Discovery/Web-Content/web-extensions.txt -u http://94.237.55.21:57155/blog/indexFUZZ -t 160
+
+
+ RECURSIVE SCANNING
+ ffuf -w /opt/useful/seclists/Discovery/Web-Content/directory-list-2.3-small.txt -u http://SERVER_IP:PORT/FUZZ -recursion -recursion-depth 1 -e .php -v
+
+
+ VHOST SCANNING:
+ ffuf -w /opt/useful/seclists/Discovery/DNS/subdomains-top1million-5000.txt -u http://academy.htb:PORT/ -H 'Host: FUZZ.academy.htb'
+
+
+FILTERING TO EXCLUDE RESPONSE SIZES (900):
+ffuf -w /opt/useful/seclists/Discovery/DNS/subdomains-top1million-5000.txt:FUZZ -u http://academy.htb:PORT/ -H 'Host: FUZZ.academy.htb' -fs 900
+
+=====================
+!!! MAKE SURE TO DO BOTH TO GET THE FULL PICTURE !!!
+PARAMETER FUZZING (GET REQUESTS):
+ffuf -w /opt/useful/seclists/Discovery/Web-Content/burp-parameter-names.txt -u http://admin.academy.htb:46184/admin/admin.php?FUZZ=key -fs 798
+
+PARAMETER FUZZING (POST REQUESTS):
+ffuf -w /opt/useful/seclists/Discovery/Web-Content/burp-parameter-names.txt:FUZZ -u http://admin.academy.htb:PORT/admin/admin.php -X POST -d 'FUZZ=key' -H 'Content-Type: application/x-www-form-urlencoded' -fs xxx
+=======================
+
+VALUE FUZZING:
+ffuf -w ids.txt:FUZZ -u http://admin.academy.htb:PORT/admin/admin.php -X POST -d 'id=FUZZ' -H 'Content-Type: application/x-www-form-urlencoded' -fs xxx
+
+^curl request:
+curl http://admin.academy.htb:PORT/admin/admin.php -X POST -d 'id=key' -H 'Content-Type: application/x-www-form-urlencoded'
+
+

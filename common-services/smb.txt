@@ -1,0 +1,122 @@
+MAPPING A SHARE TO A DRIVE LETTER:
+(using \\192.168.220.129\Finance\ as the example)
+check the directory
+dir \\192.168.220.129\Finance\
+
+net use n: \\192.168.220.129\Finance
+or
+net use n: \\192.168.220.129\Finance /user:plaintext Password123
+
+
+USING DIR
+Command to check how many files in a shared folder recursively:
+(uses drive letter n)
+dir n: /a-d /s /b | find /c ":\"
+
+Command to check for file name with 'cred'
+dir n:\*cred* /s /b
+dir n:\*secret* /s /b
+dir n:\*passw* /s /b
+dir n:\*username* /s /b
+
+Command to check for files w/ contents 'cred'
+findstr /s /i cred n:\*.*
+findstr /s /i secret n:\*.*
+findstr /s /i passw n:\*.*
+findstr /s /i username n:\*.*
+
+
+MAPPING A SHARE TO A DRIVE LETTER USING POWERSHELL:
+Get-ChildItem \\192.168.220.129\Finance\
+
+then instead of net use
+New-PSDrive -Name "N" -Root "\\192.168.220.129\Finance" -PSProvider "FileSystem"
+
+or credentialed:
+$username = 'plaintext'
+$password = 'Password123'
+$secpassword = ConvertTo-SecureString $password -AsPlainText -Force
+$cred = New-Object System.Management.Automation.PSCredential $username, $secpassword
+New-PSDrive -Name "N" -Root "\\192.168.220.129\Finance" -PSProvider "FileSystem" -Credential $cred
+
+
+GET-CHILDITEM (GCI):
+If you want to check item count:
+(gci -File -Recurse | Measure-Object).Count
+
+If you want to list all files w/ cred in the name:
+gci -Recurse -Path N:\ -Include *cred* -File
+
+
+SELECT-STRING (windows grep):
+This will show the strings with 'cred' in the contents:
+gci -Recurse -Path N:\ | Select-String "cred" -List
+
+
+
+MOUNTING SMB SHARE IN LINUX:
+sudo apt install cifs-util
+sudo mkdir /mnt/Finance
+sudo mount -t cifs -o username=plaintext,password=Password123,domain=. //192.168.220.129/Finance /mnt/Finance
+
+
+EMAILING THROUGH SMTP(SEND) & IMAP/POP3(RECEIVE) 
+evolution is an email client (https://www.youtube.com/watch?v=xelO2CiaSVs)
+sudo apt-get install evolution
+
+
+
+SQLCMD & MySQL (windows)
+You can connect to SQL w/ sqlcmd using:
+sqlcmd -S 10.129.20.13 -U username -P Password123
+
+and MySQL using:
+mysql.exe -u username -pPassword123 -h 10.129.20.13
+
+
+DATABASE CONNECTING USING DBEAVER:
+install
+sudo dpkg -i dbeaver-<version>.deb
+
+run
+dbeaver &
+
+usage for MSSQL
+(https://www.youtube.com/watch?v=gU6iQP5rFMw)
+
+usage for MySQL
+(https://www.youtube.com/watch?v=PeuWmz8S6G8)
+
+
+
+===============
+TOOLS LIST:
+
+SMB:
+smbclient
+CrackMapExec
+SMBMap
+Impacket
+psexec.py
+smbexec.py
+
+FTP:
+ftp
+lftp
+ncftp
+filezilla
+crossftp
+
+EMAIL:
+Thunderbird
+evolution
+mutt
+mailutils
+Claws
+sendEmail
+sendmail
+
+DATABASES:
+mssql-cli
+mycli
+dbeaver

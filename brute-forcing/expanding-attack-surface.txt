@@ -1,0 +1,2 @@
+TO LISTEN WITHIN A TARGET FOR OPEN PORTS
+netstat -tulpn | grep LISTEN

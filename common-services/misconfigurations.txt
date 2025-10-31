@@ -1,0 +1,45 @@
+MISCONFIGURATIONS happen when a sysadmin, tech support, or dev does not correctly configure the security framework of an application, website, desktop, etc.
+
+
+DEFAULT CREDENTIALS / ANON AUTH
+^ good place to start, as it's rare but sometimes works.
+
+
+Good article for choosing an authentication control strat:
+https://authress.io/knowledge-base/academy/topics/access-control-strategies
+
+
+UNNECESSARY DEFAULTS
+Default values are usually left to keep usability rather than security, which is something an attack would be able to pick at.
+
+These include:
+- unnecessary ports
+- unused services
+- extra pages
+- unused accounts
+- unused privileges
+
+
+PREVENTION:
+- Diable admin interfaces
+- turn debugging off
+- disable default usernames and passwords
+- set up a server to prevent unauthorized access, directory listing, and more
+- run scans and audits regularly to help discover future misconfigurations/missing fixes.
+
+
+SENSITIVE INFORMATION
+includes but is not limited to:
+- Usernames
+- Email addresses
+- Passwords
+- DNS records
+- IP addresses
+- Source code
+- Configuration files
+- PII
+
+
+UNDERSTANDING THE TARGET:
+Familiarize yourself with the target, its processes, procedures, business model, and purpose, then you can understand the purpose of some services and what to look for.
+

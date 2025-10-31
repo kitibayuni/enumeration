@@ -1,0 +1,72 @@
+FLOW OF A PROCESS AND VULNERABILITY:
+1. a SOURCE performs specific request to ->
+2. a PROCESS where the vulnerability gets triggered, which have
+3. a set of PRIVILEGES used to execute.
+4. each process has a specific goal or DESTINATION to either compute new data or forward.
+
+
+!!! WE DO NOT ATTACK PROTOCOLS, WE ATTACK SERVICES/SOURCES !!!
+
+
+============
+== SOURCE ==
+============
+
+A source of information used for a specific task of a process.
+
+Sources include:
+Code
+Libraries
+Configurations
+APIs
+User Input
+
+IDENTIFY THE SOURCE, as this is what is exploited for vulnerabilities.
+
+
+
+
+===============
+== PROCESSES ==
+===============
+
+The process is the information forwarded from the source.
+The process is also where most vulnerabilities lie.
+
+Process components:
+PID
+Input
+Data processing (functions)
+Variables (placeholders/jars for info)
+Logging (can give hints/clues to the process)
+
+
+
+
+================
+== PRIVILEGES ==
+================
+
+Privileges are what determines which tasks and actions can be performed on a system.
+
+Types of Privileges:
+System
+User
+Groups
+Policies
+Rules
+
+
+PLEASE REVIEW THE IMAGES IN THE FOLDER AS REFERENCE TO HOW THIS CAN BE USED IN REPORTING
+
+
+
+
+
+== ADDITIONAL PERSONAL THOUGHTS ON HOW TO CREATE YOUR OWN EXPLOITS ==
+1. Identify the services
+2. Understand the services
+3. Reverse-engineer the services
+4. Find all inputs available and which functions process it and how
+5. Test the service on a local machine and try to mess with those inputs to see what sticks
+6. If an exploit is found, then automate the process

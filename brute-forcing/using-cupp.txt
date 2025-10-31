@@ -1,0 +1,7 @@
+cupp -i
+
+
+After generating, if you have a password policy then you can filter for that
+
+
+Best to generate WITH ALL things at the end (additional )

